@@ -49,24 +49,35 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 h-screen border-r-2 border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)] transition-all duration-200 flex flex-col",
-        collapsed ? "w-[68px]" : "w-64"
+        collapsed ? "w-[68px]" : "w-64",
       )}
       aria-label="Main navigation"
     >
       {/* Logo */}
-      <div className={cn("flex items-center border-b-2 border-[var(--color-border-primary)] h-14", collapsed ? "justify-center px-2" : "px-4")}>
+      <div
+        className={cn(
+          "flex items-center border-b-2 border-[var(--color-border-primary)] h-14",
+          collapsed ? "justify-center px-2" : "px-4",
+        )}
+      >
         {collapsed ? (
-          <Link href="/dashboard" className="flex items-center justify-center" aria-label="Forge Home">
+          <Link href="/" className="flex items-center justify-center" aria-label="Forge Home">
             <div className="w-8 h-8 bg-[var(--color-accent-primary)] rounded-[var(--radius-md)] flex items-center justify-center">
-              <span className="text-[var(--color-text-inverse)] font-bold font-mono text-sm">F</span>
+              <span className="text-[var(--color-text-inverse)] font-bold font-mono text-sm">
+                F
+              </span>
             </div>
           </Link>
         ) : (
-          <Link href="/dashboard" className="flex items-center gap-3" aria-label="Forge Home">
+          <Link href="/" className="flex items-center gap-3" aria-label="Forge Home">
             <div className="w-8 h-8 bg-[var(--color-accent-primary)] rounded-[var(--radius-md)] flex items-center justify-center">
-              <span className="text-[var(--color-text-inverse)] font-bold font-mono text-sm">F</span>
+              <span className="text-[var(--color-text-inverse)] font-bold font-mono text-sm">
+                F
+              </span>
             </div>
-            <span className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">FORGE</span>
+            <span className="text-lg font-bold tracking-tight text-[var(--color-text-primary)]">
+              FORGE
+            </span>
           </Link>
         )}
       </div>
@@ -105,12 +116,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               href={item.href}
               className={cn(
                 isActive ? "sidebar-link-active" : "sidebar-link",
-                collapsed && "justify-center px-2"
+                collapsed && "justify-center px-2",
               )}
               title={collapsed ? item.label : undefined}
               aria-current={isActive ? "page" : undefined}
             >
-              <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-[var(--color-accent-primary)]")} />
+              <item.icon
+                className={cn("h-5 w-5 shrink-0", isActive && "text-[var(--color-accent-primary)]")}
+              />
               {!collapsed && <span>{item.label}</span>}
             </Link>
           );
@@ -146,7 +159,18 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <path d="m6 9 6 6 6-6" />
     </svg>
   );
