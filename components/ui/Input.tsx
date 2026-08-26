@@ -8,11 +8,13 @@ export interface InputProps
   label?: string;
   error?: string;
   hint?: string;
+  icon?: React.ReactNode;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, hint, id, ...props }, ref) => {
-    const inputId = id || React.useId();
+  ({ className, label, error, hint, id, icon, ...props }, ref) => {
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
 
     return (
       <div className="w-full">
@@ -24,14 +26,26 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
-          id={inputId}
-          className={cn("input-base", error && "border-[var(--color-status-error)]", className)}
-          ref={ref}
-          aria-invalid={error ? "true" : "false"}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
-          {...props}
-        />
+        <div className="relative">
+          {icon && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none">
+              {icon}
+            </div>
+          )}
+          <input
+            id={inputId}
+            className={cn(
+              "input-base",
+              error && "border-[var(--color-status-error)]",
+              icon && "pl-10",
+              className
+            )}
+            ref={ref}
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+            {...props}
+          />
+        </div>
         {error && (
           <p id={`${inputId}-error`} className="mt-1.5 text-sm text-[var(--color-status-error)]" role="alert">
             {error}
