@@ -7,16 +7,20 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { Separator } from "@/components/ui/Separator";
 import { ExternalLink, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    router.push("/dashboard");
     setIsLoading(false);
   };
 
