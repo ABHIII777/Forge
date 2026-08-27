@@ -51,6 +51,25 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+
+    const data = await fetch("/auth/api/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/strong"
+      },
+      body: JSON.stringify({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password
+      })
+    })
+
+    if (data.ok) {
+      console.log("looks like everything is working fine")
+    } else {
+      console.log("Something went wrong.", data)
+    }
+
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     router.push("/auth/login");
