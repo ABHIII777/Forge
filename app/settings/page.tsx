@@ -49,11 +49,6 @@ function AccountTab({ handleSave, isSaving, saveSuccess }: { handleSave: () => v
         <Input label="Email" type="email" defaultValue={user.email} />
         <Input label="Username" defaultValue={user.username} />
         <Separator />
-        <div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-[var(--color-text-primary)]">Two-Factor Authentication</p><p className="text-xs text-[var(--color-text-muted)]">Add an extra layer of security</p></div>
-          <Switch />
-        </div>
-        <Separator />
         <div><p className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Danger Zone</p><Button variant="danger" size="sm">Delete Account</Button></div>
       </CardContent>
       <CardFooter><Button variant="primary" onClick={handleSave} loading={isSaving}>{saveSuccess ? "Saved!" : "Save Changes"}</Button></CardFooter>

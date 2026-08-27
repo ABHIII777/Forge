@@ -4,9 +4,16 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/Card";
 import { Separator } from "@/components/ui/Separator";
-import { ExternalLink, Mail, User, Lock, MailCheck } from "lucide-react";
+import { ExternalLink, Mail, User, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
@@ -19,20 +26,24 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = React.useState(false);
-  // const [step, setStep] = React.useState<"form" | "verify">("form");
   const router = useRouter();
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Enter a valid email";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Enter a valid email";
     if (!formData.username.trim()) newErrors.username = "Username is required";
-    else if (formData.username.length < 3) newErrors.username = "Username must be at least 3 characters";
-    else if (!/^[a-zA-Z0-9_-]+$/.test(formData.username)) newErrors.username = "Username can only contain letters, numbers, underscores, and hyphens";
+    else if (formData.username.length < 3)
+      newErrors.username = "Username must be at least 3 characters";
+    else if (!/^[a-zA-Z0-9_-]+$/.test(formData.username))
+      newErrors.username = "Username can only contain letters, numbers, underscores, and hyphens";
     if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 8) newErrors.password = "Password must be at least 8 characters";
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+    else if (formData.password.length < 8)
+      newErrors.password = "Password must be at least 8 characters";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -42,9 +53,8 @@ export default function RegisterPage() {
     if (!validateForm()) return;
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    router.push("/auth/login")
+    router.push("/auth/login");
     setIsLoading(false);
-    // setStep("verify");
   };
 
   const handleChange = (field: string, value: string) => {
@@ -52,59 +62,19 @@ export default function RegisterPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // if (step === "verify") {
-  //   return (
-  //     <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center p-4">
-  //       <div className="w-full max-w-[400px]">
-  //         <div className="text-center mb-8">
-  //           <Link href="/" className="inline-flex items-center gap-3">
-  //             <div className="w-10 h-10 bg-[var(--color-accent-primary)] rounded-[var(--radius-md)] flex items-center justify-center">
-  //               <span className="text-[var(--color-text-inverse)] font-bold font-mono text-lg">F</span>
-  //             </div>
-  //             <span className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">FORGE</span>
-  //           </Link>
-  //         </div>
-
-  //         <Card>
-  //           <CardContent className="pt-6">
-  //             <div className="text-center">
-  //               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-status-success)]/15 border-2 border-[var(--color-status-success)]/30 flex items-center justify-center">
-  //                 <MailCheck className="h-8 w-8 text-[var(--color-status-success)]" />
-  //               </div>
-  //               <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">Check your email</h2>
-  //               <p className="text-[var(--color-text-secondary)] mb-6">
-  //                 We&apos;ve sent a verification link to <strong className="text-[var(--color-text-primary)]">{formData.email}</strong>
-  //               </p>
-  //               <p className="text-sm text-[var(--color-text-muted)] mb-6">
-  //                 Click the link in the email to verify your account and get started.
-  //               </p>
-  //               <div className="space-y-3">
-  //                 <Button variant="outline" className="w-full" onClick={() => setStep("form")}>
-  //                   Resend Email
-  //                 </Button>
-  //                 <Link href="/auth/login">
-  //                   <Button variant="ghost" className="w-full">
-  //                     Back to Sign In
-  //                   </Button>
-  //                 </Link>
-  //               </div>
-  //             </div>
-  //           </CardContent>
-  //         </Card>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center p-4">
       <div className="w-full max-w-[440px]">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3">
             <div className="w-10 h-10 bg-[var(--color-accent-primary)] rounded-[var(--radius-md)] flex items-center justify-center">
-              <span className="text-[var(--color-text-inverse)] font-bold font-mono text-lg">F</span>
+              <span className="text-[var(--color-text-inverse)] font-bold font-mono text-lg">
+                F
+              </span>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">FORGE</span>
+            <span className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
+              FORGE
+            </span>
           </Link>
         </div>
 
@@ -126,7 +96,9 @@ export default function RegisterPage() {
             </div>
             <div className="relative">
               <Separator />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--color-bg-elevated)] px-2 text-xs text-[var(--color-text-muted)]">or continue with email</span>
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--color-bg-elevated)] px-2 text-xs text-[var(--color-text-muted)]">
+                or continue with email
+              </span>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
@@ -194,7 +166,20 @@ export default function RegisterPage() {
                   className="mt-1 h-4 w-4 rounded border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)] focus:ring-offset-[var(--color-bg-primary)]"
                 />
                 <label htmlFor="terms" className="text-[var(--color-text-secondary)]">
-                  I agree to the <Link href="/terms" className="text-[var(--color-accent-primary)] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[var(--color-accent-primary)] hover:underline">Privacy Policy</Link>
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    className="text-[var(--color-accent-primary)] hover:underline"
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy"
+                    className="text-[var(--color-accent-primary)] hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
                 </label>
               </div>
               <Button type="submit" className="w-full" loading={isLoading}>
@@ -204,7 +189,13 @@ export default function RegisterPage() {
           </CardContent>
           <CardFooter className="text-center">
             <p className="text-sm text-[var(--color-text-muted)]">
-              Already have an account? <Link href="/auth/login" className="text-[var(--color-accent-primary)] hover:underline font-medium">Sign in</Link>
+              Already have an account?{" "}
+              <Link
+                href="/auth/login"
+                className="text-[var(--color-accent-primary)] hover:underline font-medium"
+              >
+                Sign in
+              </Link>
             </p>
           </CardFooter>
         </Card>
@@ -212,3 +203,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

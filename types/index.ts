@@ -223,7 +223,6 @@ export interface SettingsData {
   account: {
     email: string;
     username: string;
-    twoFactorEnabled: boolean;
   };
   appearance: {
     theme: "dark" | "light" | "system";
