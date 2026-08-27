@@ -19,9 +19,26 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    router.push("/dashboard");
-    setIsLoading(false);
+
+    const data = await fetch("/auth/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    })
+
+    if (data.ok) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      router.push("/dashboard");
+      setIsLoading(false);
+    } else {
+      console.log("Something went wrong.", data)
+    }
+
   };
 
   return (
