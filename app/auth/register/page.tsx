@@ -52,6 +52,7 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
+
     const data = await fetch("/auth/api/signup", {
       method: "POST",
       headers: {
@@ -59,22 +60,28 @@ export default function RegisterPage() {
       },
       body: JSON.stringify({
         fullName: formData.fullName,
-        username: formData.username,
         email: formData.email,
+        username: formData.username,
         password: formData.password
       })
     })
 
+    const res = await data.json()
+
     if (data.ok) {
       console.log("looks like everything is working fine")
+      console.log(res);
+      setIsLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      router.push("/auth/login");
+      setIsLoading(false);
     } else {
       console.log("Something went wrong.", data)
+      alert(data);
+      console.log(data)
+      console.log(res)
     }
 
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    router.push("/auth/login");
-    setIsLoading(false);
   };
 
   const handleChange = (field: string, value: string) => {
