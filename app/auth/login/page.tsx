@@ -36,7 +36,8 @@ export default function LoginPage() {
       router.push("/dashboard");
       setIsLoading(false);
     } else {
-      console.log("Something went wrong.", data)
+      alert(data)
+      setIsLoading(false)
     }
 
   };

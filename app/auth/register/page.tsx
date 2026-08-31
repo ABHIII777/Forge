@@ -52,7 +52,6 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-
     const data = await fetch("/auth/api/signup", {
       method: "POST",
       headers: {
@@ -66,11 +65,7 @@ export default function RegisterPage() {
       })
     })
 
-    const res = await data.json()
-
     if (data.ok) {
-      console.log("looks like everything is working fine")
-      console.log(res);
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 1500));
       router.push("/auth/login");
@@ -78,8 +73,6 @@ export default function RegisterPage() {
     } else {
       console.log("Something went wrong.", data)
       alert(data);
-      console.log(data)
-      console.log(res)
     }
 
   };
