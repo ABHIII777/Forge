@@ -17,6 +17,7 @@ import {
   DropdownMenuShortcut,
 } from "@/components/ui/DropdownMenu";
 import { mockUsers } from "@/mock-data";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   onSearchOpen: () => void;
@@ -25,6 +26,12 @@ interface HeaderProps {
 export function Header({ onSearchOpen }: HeaderProps) {
   const currentUser = mockUsers[0];
   const unreadCount = 3;
+
+  const [user, setUser] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/auth/api/dashboard").then((res) => res.json()).then((data) => setUser(data)).catch((err) => console.log(err))
+  }, [])
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b-2 border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)] px-4">
@@ -63,8 +70,8 @@ export function Header({ onSearchOpen }: HeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-2" aria-label="User menu">
-              <Avatar name={currentUser.displayName} size="xs" />
-              <span className="hidden sm:inline text-sm">{currentUser.displayName}</span>
+              <Avatar name={user[0]?.displayName} size="xs" />
+              <span className="hidden sm:inline text-sm">{user[0]?.displayName}</span>
               <ChevronDown className="h-3 w-3 text-[var(--color-text-muted)]" />
             </Button>
           </DropdownMenuTrigger>

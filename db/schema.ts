@@ -56,8 +56,6 @@ export const discussionCategoryEnum = pgEnum("discussion_category", [
   "question",
 ]);
 
-// ─── Tables ──────────────────────────────────────────────────────────────────
-
 export const user = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   displayName: text("display_name").notNull(),
