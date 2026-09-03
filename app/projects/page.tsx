@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
+import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { formatRelativeTime } from "@/lib/utils";
 import { mockProjects, mockWorkspaces } from "@/mock-data";
 import { Plus, Search } from "lucide-react";
@@ -14,6 +15,7 @@ import * as React from "react";
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   const filteredProjects = mockProjects.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
@@ -24,7 +26,9 @@ export default function ProjectsPage() {
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Projects</h1>
             <p className="text-[var(--color-text-secondary)] mt-1">All projects across your workspaces</p>
           </div>
-          <Button variant="primary" size="sm"><Plus className="h-4 w-4" /> New Project</Button>
+          <Button variant="primary" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+            <Plus className="h-4 w-4" /> New Project
+          </Button>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
@@ -60,6 +64,7 @@ export default function ProjectsPage() {
           })}
         </div>
       </div>
+      <CreateProjectModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} />
     </AppShell>
   );
 }

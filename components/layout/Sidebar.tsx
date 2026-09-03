@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { mockWorkspaces } from "@/mock-data";
+import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -44,6 +45,7 @@ const navItems = [
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [selectedWorkspace, setSelectedWorkspace] = React.useState(mockWorkspaces[0]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   return (
     <aside
@@ -106,6 +108,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
       )}
 
+      {/* New Project Button */}
+      <div className="p-3 border-b-2 border-[var(--color-border-primary)]">
+        <Button
+          variant="primary"
+          size={collapsed ? "sm" : "md"}
+          className={cn("w-full", collapsed && "px-2")}
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          <Plus className="h-4 w-4" />
+          {!collapsed && <span>New Project</span>}
+        </Button>
+      </div>
+
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
         {navItems.map((item) => {
@@ -153,6 +168,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           {!collapsed && <span>Collapse</span>}
         </Button>
       </div>
+      <CreateProjectModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        defaultWorkspaceId={selectedWorkspace.id}
+      />
     </aside>
   );
 }

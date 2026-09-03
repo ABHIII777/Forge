@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
+import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { formatRelativeTime, getInitials } from "@/lib/utils";
 import {
   mockProjects,
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const currentUser = mockUsers[0];
   const recentIssues = mockIssues.filter((i) => i.status !== "done").slice(0, 5);
   const onlineUsers = mockUsers.filter((u) => u.isOnline);
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   
   const [user, setUser] = useState<any[]>([]);
 
@@ -103,11 +105,16 @@ export default function DashboardPage() {
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Recent Projects</h2>
-              <Link href="/projects">
-                <Button variant="ghost" size="sm">
-                  View all <ArrowRight className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <Button variant="primary" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+                  <Plus className="h-4 w-4" /> New Project
                 </Button>
-              </Link>
+                <Link href="/projects">
+                  <Button variant="ghost" size="sm">
+                    View all <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
             <div className="space-y-3">
               {mockProjects.slice(0, 4).map((project) => (
@@ -281,6 +288,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <CreateProjectModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} />
     </AppShell>
   );
 }
