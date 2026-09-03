@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   try {
 
     await db.insert(user).values({
-      fullname: fullName,
+      displayName: fullName,
       username: username,
       email: email,
       password: hashedPassword
