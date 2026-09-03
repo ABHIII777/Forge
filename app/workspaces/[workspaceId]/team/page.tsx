@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, FileCode, Activity, Settings, Users, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,17 +13,7 @@ import { Input } from "@/components/ui/Input";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatDate } from "@/lib/utils";
 import { mockUsers } from "@/mock-data";
-
-const workspaceNav = [
-  { label: "Overview", href: "", icon: Activity },
-  { label: "Projects", href: "/projects", icon: Columns3 },
-  { label: "Issues", href: "/issues", icon: AlertCircle },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Files", href: "/files", icon: FileCode },
-  { label: "Team", href: "/team", icon: Users },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { workspaceNav } from "@/lib/constants/navigation";
 
 const roleColors: Record<string, "primary" | "secondary" | "default" | "info"> = {
   owner: "primary",

@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("/auth/api/dashboard").then((res) => 
+    fetch("/api/dashboard").then((res) => 
       res.json()
     ).then((data) => {
       setUser(data)

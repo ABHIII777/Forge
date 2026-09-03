@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, FileCode, Activity, Settings, Plus, MessageCircle, Paperclip, Clock } from "lucide-react";
+import { Plus, MessageCircle, Paperclip, Clock } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -10,16 +10,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import { getProjectById, getIssuesByProject, getUserById } from "@/mock-data";
 import type { IssueStatus } from "@/types";
-
-const projectNav = [
-  { label: "Overview", href: "", icon: LayoutDashboard },
-  { label: "Board", href: "/board", icon: Columns3 },
-  { label: "Issues", href: "/issues", icon: AlertCircle },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Files", href: "/files", icon: FileCode },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { projectNav } from "@/lib/constants/navigation";
 
 const columns: { status: IssueStatus; label: string; color: string }[] = [
   { status: "backlog", label: "BACKLOG", color: "var(--color-text-muted)" },

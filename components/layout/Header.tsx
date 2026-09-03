@@ -30,7 +30,7 @@ export function Header({ onSearchOpen }: HeaderProps) {
   const [user, setUser] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("/auth/api/dashboard").then((res) => res.json()).then((data) => setUser(data)).catch((err) => console.log(err))
+    fetch("/api/dashboard").then((res) => res.json()).then((data) => setUser(data)).catch((err) => console.log(err))
   }, [])
 
   return (
