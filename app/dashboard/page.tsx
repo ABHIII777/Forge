@@ -29,6 +29,8 @@ import {
   getUserById,
 } from "@/mock-data";
 
+import { useEffect, useState } from "react";
+
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -49,6 +51,16 @@ export default function DashboardPage() {
   const currentUser = mockUsers[0];
   const recentIssues = mockIssues.filter((i) => i.status !== "done").slice(0, 5);
   const onlineUsers = mockUsers.filter((u) => u.isOnline);
+  
+  const [user, setUser] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/auth/api/dashboard").then((res) => 
+      res.json()
+    ).then((data) => {
+      setUser(data)
+    }).catch((err) => console.log(err))
+  }, [])
 
   return (
     <AppShell>
@@ -56,7 +68,8 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-            {getGreeting()}, {currentUser.displayName.split(" ")[0]}
+            {/* {getGreeting()}, {user.split(" ")[0]} */}
+            {getGreeting()}, {user[0]?.displayName}
           </h1>
           <p className="text-[var(--color-text-secondary)] mt-1">
             Here&apos;s what&apos;s happening across your workspaces.
