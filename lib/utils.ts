@@ -58,10 +58,6 @@ export function generateId(prefix: string = ""): string {
   return `${prefix}${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function classNames(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(" ");
-}
-
 export function getIssueCountByStatus(issues: Array<{ status: string }>): Record<string, number> {
   const counts: Record<string, number> = { backlog: 0, in_progress: 0, review: 0, done: 0 };
   issues.forEach((issue) => {

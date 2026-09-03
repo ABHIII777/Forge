@@ -254,15 +254,3 @@ export interface SessionData {
   lastActive: Date;
   isCurrent: boolean;
 }
-
-export interface MockDataMap {
-  users: User[];
-  workspaces: Workspace[];
-  projects: Project[];
-  issues: Issue[];
-  discussions: Discussion[];
-  files: FileItem[];
-  notifications: Notification[];
-  activities: ActivityEvent[];
-  labels: Label[];
-}

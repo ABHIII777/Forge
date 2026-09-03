@@ -3,23 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, FileCode, Activity, Settings, Upload, Folder, File, Search, MoreVertical, Download, Trash2, Eye } from "lucide-react";
+import { Upload, Folder, File, Search, Download, Trash2, Eye, FileCode } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime, formatFileSize } from "@/lib/utils";
 import { getProjectById, getFilesByProject, getUserById } from "@/mock-data";
-
-const projectNav = [
-  { label: "Overview", href: "", icon: LayoutDashboard },
-  { label: "Board", href: "/board", icon: Columns3 },
-  { label: "Issues", href: "/issues", icon: AlertCircle },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Files", href: "/files", icon: FileCode },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { projectNav } from "@/lib/constants/navigation";
 
 function getFileIcon(type: string) {
   return type === "folder" ? Folder : File;

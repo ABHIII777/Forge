@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, FileCode, Activity, Settings, Plus, Search, Pin, Lock, Eye, MessageCircle } from "lucide-react";
+import { Plus, Search, Pin, Lock, Eye, MessageCircle, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -11,16 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
 import { getProjectById, getDiscussionsByProject, getUserById } from "@/mock-data";
-
-const projectNav = [
-  { label: "Overview", href: "", icon: LayoutDashboard },
-  { label: "Board", href: "/board", icon: Columns3 },
-  { label: "Issues", href: "/issues", icon: AlertCircle },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Files", href: "/files", icon: FileCode },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { projectNav } from "@/lib/constants/navigation";
 
 const categoryColors: Record<string, string> = {
   technical: "info",

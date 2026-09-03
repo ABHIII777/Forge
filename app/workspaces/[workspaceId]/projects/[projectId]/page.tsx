@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, FileCode, Activity, Settings, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -12,16 +12,7 @@ import { Separator } from "@/components/ui/Separator";
 import { AppShell } from "@/components/layout/AppShell";
 import { getIssueCountByStatus } from "@/lib/utils";
 import { getProjectById, getIssuesByProject, mockUsers } from "@/mock-data";
-
-const projectNav = [
-  { label: "Overview", href: "", icon: LayoutDashboard },
-  { label: "Board", href: "/board", icon: Columns3 },
-  { label: "Issues", href: "/issues", icon: AlertCircle },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Files", href: "/files", icon: FileCode },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { projectNav } from "@/lib/constants/navigation";
 
 export default function ProjectOverviewPage() {
   const params = useParams();

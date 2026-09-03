@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FolderKanban, AlertCircle, Users, MessageSquare, Activity, Settings, ArrowRight, FileCode, Plus } from "lucide-react";
+import { Plus, Users, FolderKanban } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -11,17 +11,7 @@ import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
 import { getWorkspaceById, mockProjects, mockUsers, mockActivities, getUserById } from "@/mock-data";
-
-const workspaceNav = [
-  { label: "Overview", href: "", icon: Activity },
-  { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Issues", href: "/issues", icon: AlertCircle },
-  { label: "Discussions", href: "/discussions", icon: MessageSquare },
-  { label: "Files", href: "/files", icon: FileCode },
-  { label: "Team", href: "/team", icon: Users },
-  { label: "Activity", href: "/activity", icon: Activity },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { workspaceNav } from "@/lib/constants/navigation";
 
 export default function WorkspaceOverviewPage() {
   const params = useParams();
