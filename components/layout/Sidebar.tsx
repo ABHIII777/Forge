@@ -48,7 +48,6 @@ const navItems = [
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  // TODO(api): load real workspaces; session-local until the API lands.
   const [workspaces, setWorkspaces] = React.useState<Workspace[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = React.useState<string | undefined>(undefined);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
@@ -56,9 +55,21 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const selectedWorkspace = workspaces.find((w) => w.id === selectedWorkspaceId);
 
-  const handleCreateWorkspace = (input: CreateWorkspaceInput) => {
+  React.useEffect(() => {
+    fetch("/api/workspaces")
+      .then((res) => (res.ok ? res.json() : { workspaces: [] }))
+      .then((data) => {
+        const rows = (data.workspaces ?? []) as Workspace[];
+        setWorkspaces(rows);
+        setSelectedWorkspaceId((prev) => prev ?? rows[0]?.id);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  const handleCreateWorkspace = async (input: CreateWorkspaceInput) => {
+    // Optimistic draft for instant feedback; swapped for the server row below.
     const now = new Date();
-    const workspace: Workspace = {
+    const draft: Workspace = {
       id: `ws_${Date.now()}`,
       name: input.name,
       slug: input.slug,
@@ -69,8 +80,27 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       createdAt: now,
       updatedAt: now,
     };
-    setWorkspaces((prev) => [...prev, workspace]);
-    setSelectedWorkspaceId(workspace.id);
+    setWorkspaces((prev) => [...prev, draft]);
+    setSelectedWorkspaceId(draft.id);
+
+    try {
+      const res = await fetch("/api/workspaces", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("Workspace creation failed", data);
+        return;
+      }
+      setWorkspaces((prev) => prev.map((w) => (w.id === draft.id ? data.workspace : w)));
+      setSelectedWorkspaceId(data.workspace.id);
+    } catch (err) {
+      console.error("Workspace creation failed", err);
+    }
   };
 
   return (
