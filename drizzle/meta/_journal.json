@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1787829648249,
-      "tag": "0000_narrow_junta",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1788331450789,
-      "tag": "0001_mute_hellcat",
+      "when": 1788515868556,
+      "tag": "0000_initial",
       "breakpoints": true
     }
   ]
