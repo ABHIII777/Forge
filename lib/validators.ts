@@ -26,7 +26,7 @@ export const createProjectSchema = z.object({
 
 export const createWorkspaceSchema = z.object({
     name: z.string().trim().min(3).max(20),
-    slug : z.string().optional(),
+    slug : z.string().trim().toLowerCase().regex(/^[a-z0-9-]{2,50}$/).optional(),
     description: z.preprocess(
         (v) => (v === "" ? undefined : v),
         z.string().trim().min(10).max(2000).optional(),
