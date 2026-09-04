@@ -127,14 +127,34 @@ export function CreateProjectModal({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    setCreatedProject({
+    const data = await fetch("/api/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+
+    const res = await data.json()
+
+    if (data.ok) {
+      console.log("looks like everything worked fine: ", data)
+      setIsSubmitting(false)
+    } else {
+      console.log("Something went wrong")
+      console.error("The error occured", res)
+    }
+
+    const newCreatedProject = {
       id: `proj_${Date.now()}`,
       key: formData.key,
       name: formData.name,
+      description: formData.description,
       workspaceId: formData.workspaceId,
-      status: formData.status,
-    });
+      status: formData.status
+    }
+    setCreatedProject(newCreatedProject)
+    
     setIsSubmitting(false);
   };
 

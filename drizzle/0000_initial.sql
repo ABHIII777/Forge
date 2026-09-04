@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";--> statement-breakpoint
 CREATE TYPE "public"."discussion_category" AS ENUM('general', 'technical', 'proposal', 'announcement', 'question');--> statement-breakpoint
 CREATE TYPE "public"."issue_status" AS ENUM('backlog', 'in_progress', 'review', 'done');--> statement-breakpoint
 CREATE TYPE "public"."notification_type" AS ENUM('mention', 'assignment', 'comment', 'workspace_invite', 'project_activity', 'system');--> statement-breakpoint
@@ -150,6 +151,22 @@ CREATE TABLE "session" (
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
+CREATE TABLE "user" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"display_name" text NOT NULL,
+	"username" text NOT NULL,
+	"email" text NOT NULL,
+	"password" text NOT NULL,
+	"avatar_url" text,
+	"bio" text,
+	"role" "user_role" DEFAULT 'member' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"last_active_at" timestamp,
+	"is_online" boolean DEFAULT false NOT NULL,
+	CONSTRAINT "user_username_unique" UNIQUE("username"),
+	CONSTRAINT "user_email_unique" UNIQUE("email")
+);
+--> statement-breakpoint
 CREATE TABLE "workspace" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
@@ -169,16 +186,6 @@ CREATE TABLE "workspace_member" (
 	CONSTRAINT "workspace_member_workspace_id_user_id_pk" PRIMARY KEY("workspace_id","user_id")
 );
 --> statement-breakpoint
-ALTER TABLE "user" RENAME COLUMN "user_id" TO "id";--> statement-breakpoint
-ALTER TABLE "user" RENAME COLUMN "name" TO "display_name";--> statement-breakpoint
-ALTER TABLE "user" DROP CONSTRAINT "user_password_unique";--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "username" text NOT NULL;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "avatar_url" text;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "bio" text;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "role" "user_role" DEFAULT 'member' NOT NULL;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "last_active_at" timestamp;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "is_online" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "activity" ADD CONSTRAINT "activity_workspace_id_workspace_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspace"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activity" ADD CONSTRAINT "activity_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activity" ADD CONSTRAINT "activity_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -208,5 +215,4 @@ ALTER TABLE "project_member" ADD CONSTRAINT "project_member_user_id_user_id_fk" 
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace" ADD CONSTRAINT "workspace_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_member" ADD CONSTRAINT "workspace_member_workspace_id_workspace_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspace"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "workspace_member" ADD CONSTRAINT "workspace_member_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user" ADD CONSTRAINT "user_username_unique" UNIQUE("username");
+ALTER TABLE "workspace_member" ADD CONSTRAINT "workspace_member_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
