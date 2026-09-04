@@ -8,13 +8,15 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import { mockIssues, getUserById } from "@/mock-data";
+import type { Issue, User } from "@/types";
 import { Search, Plus } from "lucide-react";
 
 export default function GlobalIssuesPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
-  const filteredIssues = mockIssues.filter((issue) => {
+  // TODO(api): load real issues.
+  const allIssues: Issue[] = [];
+  const filteredIssues = allIssues.filter((issue) => {
     const matchesSearch = issue.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || issue.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -60,7 +62,7 @@ export default function GlobalIssuesPage() {
               </thead>
               <tbody>
                 {filteredIssues.map((issue) => {
-                  const assignee = issue.assigneeId ? getUserById(issue.assigneeId) : null;
+                  const assignee = null as User | null;
                   return (
                     <tr key={issue.id} className="border-b border-[var(--color-border-primary)] last:border-0 hover:bg-[var(--color-bg-tertiary)] transition-colors">
                       <td className="px-4 py-3 font-mono text-[var(--color-text-muted)]">#{issue.number}</td>

@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Badge } from "@/components/ui/Badge";
-import { mockWorkspaces } from "@/mock-data";
 import type { ProjectStatus } from "@/types";
 import { Check } from "lucide-react";
 
@@ -42,7 +41,7 @@ const initialFormData = (defaultWorkspaceId?: string): CreateProjectFormData => 
   name: "",
   description: "",
   key: "",
-  workspaceId: defaultWorkspaceId || mockWorkspaces[0]?.id || "",
+  workspaceId: defaultWorkspaceId || "",
   status: "planning",
 });
 
@@ -260,12 +259,15 @@ export function CreateProjectModal({
                 onChange={(e) => updateField("workspaceId", e.target.value)}
                 className="input-base"
                 required
+                disabled
               >
-                {mockWorkspaces.map((ws) => (
-                  <option key={ws.id} value={ws.id}>
-                    {ws.name}
+                {formData.workspaceId ? (
+                  <option value={formData.workspaceId}>
+                    {formData.workspaceId}
                   </option>
-                ))}
+                ) : (
+                  <option value="">No workspaces yet</option>
+                )}
               </select>
               {errors.workspaceId && (
                 <p className="mt-1.5 text-sm text-[var(--color-status-error)]" role="alert">

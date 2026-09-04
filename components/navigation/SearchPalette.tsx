@@ -6,7 +6,6 @@ import { Search, FileText, Folder, AlertCircle, MessageSquare, User, ArrowRight,
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/Dialog";
 import { Badge } from "@/components/ui/Badge";
-import { mockProjects, mockIssues, mockDiscussions, mockFiles, mockUsers } from "@/mock-data";
 
 interface SearchPaletteProps {
   open: boolean;
@@ -48,70 +47,8 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
 
   const results = React.useMemo<SearchResult[]>(() => {
     if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    const items: SearchResult[] = [];
-
-    mockProjects.forEach((p) => {
-      if (p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)) {
-        items.push({
-          id: p.id,
-          type: "project",
-          title: p.name,
-          subtitle: p.description,
-          url: `/workspaces/ws_01/projects/${p.id}`,
-        });
-      }
-    });
-
-    mockIssues.forEach((i) => {
-      if (i.title.toLowerCase().includes(q)) {
-        items.push({
-          id: i.id,
-          type: "issue",
-          title: `#${i.number} ${i.title}`,
-          subtitle: `${i.status} · ${i.priority}`,
-          url: `/workspaces/ws_01/projects/${i.projectId}/issues/${i.id}`,
-        });
-      }
-    });
-
-    mockDiscussions.forEach((d) => {
-      if (d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q)) {
-        items.push({
-          id: d.id,
-          type: "discussion",
-          title: d.title,
-          subtitle: d.category,
-          url: `/workspaces/ws_01/projects/${d.projectId}/discussions`,
-        });
-      }
-    });
-
-    mockFiles.forEach((f) => {
-      if (f.name.toLowerCase().includes(q)) {
-        items.push({
-          id: f.id,
-          type: "file",
-          title: f.name,
-          subtitle: f.path,
-          url: `/workspaces/ws_01/projects/${f.projectId}/files`,
-        });
-      }
-    });
-
-    mockUsers.forEach((u) => {
-      if (u.displayName.toLowerCase().includes(q) || u.username.toLowerCase().includes(q)) {
-        items.push({
-          id: u.id,
-          type: "user",
-          title: u.displayName,
-          subtitle: `@${u.username}`,
-          url: `/profile/${u.id}`,
-        });
-      }
-    });
-
-    return items.slice(0, 10);
+    // TODO(api): search real projects, issues, discussions, files, users.
+    return [];
   }, [query]);
 
   React.useEffect(() => {

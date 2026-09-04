@@ -16,16 +16,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
 } from "@/components/ui/DropdownMenu";
-import { mockUsers } from "@/mock-data";
 import { useState, useEffect } from "react";
+import type { User as AppUser } from "@/types";
 
 interface HeaderProps {
   onSearchOpen: () => void;
 }
 
 export function Header({ onSearchOpen }: HeaderProps) {
-  const currentUser = mockUsers[0];
-  const unreadCount = 3;
+  // TODO(api): load real current user.
+  const currentUser = null as AppUser | null;
+  const unreadCount = 0;
 
   const [user, setUser] = useState<any[]>([]);
 
@@ -78,8 +79,8 @@ export function Header({ onSearchOpen }: HeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium text-[var(--color-text-primary)]">{currentUser.displayName}</p>
-                <p className="text-xs text-[var(--color-text-muted)] font-mono">@{currentUser.username}</p>
+                <p className="text-sm font-medium text-[var(--color-text-primary)]">{currentUser?.displayName ?? "Not signed in"}</p>
+                <p className="text-xs text-[var(--color-text-muted)] font-mono">@{currentUser?.username ?? "-"}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

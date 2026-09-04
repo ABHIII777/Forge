@@ -101,9 +101,10 @@
 
 ---
 
-### Phase 3: Replace Mock Data (Week 2-3)
+### Phase 3: Connect Pages to APIs (Week 2-3)
 
-- Swap all `mock-data` imports with Server Components + API calls
+- Seed data removed; pages render empty states with `TODO(api)` markers
+- Wire each page below to its API route (see API section above)
 - Add React Query / SWR for client-side caching
 - Implement optimistic updates for mutations
 
@@ -277,8 +278,6 @@ forge/
 │   ├── db.ts                    # Database connection
 │   ├── utils.ts                 # Utility functions
 │   └── validators.ts            # Zod schemas
-├── mock-data/
-│   └── index.ts                 # Mock data (replace with real data)
 ├── types/
 │   └── index.ts                 # TypeScript types
 ├── .env                         # Environment variables

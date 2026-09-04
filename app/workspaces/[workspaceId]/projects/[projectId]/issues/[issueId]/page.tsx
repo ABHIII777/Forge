@@ -12,15 +12,16 @@ import { Separator } from "@/components/ui/Separator";
 import { Textarea } from "@/components/ui/Textarea";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime, formatDate } from "@/lib/utils";
-import { getIssueById, getProjectById, getUserById, mockUsers } from "@/mock-data";
+import type { Issue, Project, User as AppUser } from "@/types";
 
 export default function IssueDetailPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
   const issueId = params.issueId as string;
-  const project = getProjectById(projectId);
-  const issue = getIssueById(issueId);
+  // TODO(api): load real project and issue.
+  const project = undefined as Project | undefined;
+  const issue = undefined as Issue | undefined;
   const [comment, setComment] = React.useState("");
 
   if (!project || !issue) {
@@ -36,8 +37,8 @@ export default function IssueDetailPage() {
     );
   }
 
-  const assignee = issue.assigneeId ? getUserById(issue.assigneeId) : null;
-  const reporter = getUserById(issue.reporterId);
+  const assignee = null as AppUser | null;
+  const reporter = null as AppUser | null;
 
   return (
     <AppShell>

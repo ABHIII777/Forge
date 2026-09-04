@@ -8,12 +8,13 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Separator } from "@/components/ui/Separator";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatDate } from "@/lib/utils";
-import { mockUsers, mockProjects } from "@/mock-data";
+import type { Project, User } from "@/types";
 import { ExternalLink, Globe, MapPin, Calendar } from "lucide-react";
 
 export default function ProfilePage() {
-  const user = mockUsers[0];
-  const userProjects = mockProjects.slice(0, 3);
+  // TODO(api): load real user and projects.
+  const user = null as User | null;
+  const userProjects: Project[] = [];
 
   return (
     <AppShell>
@@ -23,13 +24,13 @@ export default function ProfilePage() {
           <div className="lg:col-span-1">
             <Card>
               <CardContent className="text-center">
-                <Avatar name={user.displayName} size="xl" className="mx-auto" />
-                <h1 className="text-xl font-bold text-[var(--color-text-primary)] mt-4">{user.displayName}</h1>
-                <p className="text-sm text-[var(--color-text-muted)] font-mono">@{user.username}</p>
-                {user.bio && <p className="text-sm text-[var(--color-text-secondary)] mt-2">{user.bio}</p>}
+                <Avatar name={user?.displayName} size="xl" className="mx-auto" />
+                <h1 className="text-xl font-bold text-[var(--color-text-primary)] mt-4">{user?.displayName ?? "Not signed in"}</h1>
+                <p className="text-sm text-[var(--color-text-muted)] font-mono">@{user?.username ?? "-"}</p>
+                {user?.bio && <p className="text-sm text-[var(--color-text-secondary)] mt-2">{user.bio}</p>}
                 <div className="flex items-center justify-center gap-4 mt-4 text-sm text-[var(--color-text-muted)]">
                   <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />San Francisco</span>
-                  <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />Joined {formatDate(user.createdAt)}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />Joined {user ? formatDate(user.createdAt) : "-"}</span>
                 </div>
                 <div className="flex items-center justify-center gap-3 mt-4">
                   <Button variant="ghost" size="sm" aria-label="GitHub"><ExternalLink className="h-4 w-4" /></Button>

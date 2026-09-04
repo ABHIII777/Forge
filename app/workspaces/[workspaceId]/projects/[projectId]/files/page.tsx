@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime, formatFileSize } from "@/lib/utils";
-import { getProjectById, getFilesByProject, getUserById } from "@/mock-data";
+import type { FileItem, Project, User } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
 
 function getFileIcon(type: string) {
@@ -21,8 +21,9 @@ export default function FilesPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  const project = getProjectById(projectId);
-  const files = getFilesByProject(projectId);
+  // TODO(api): load real project and files.
+  const project = undefined as Project | undefined;
+  const files: FileItem[] = [];
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isDragging, setIsDragging] = React.useState(false);
 
@@ -101,7 +102,7 @@ export default function FilesPage() {
               </thead>
               <tbody>
                 {filteredFiles.map((file) => {
-                  const uploader = getUserById(file.uploadedById);
+                  const uploader = null as User | null;
                   const Icon = getFileIcon(file.type);
                   return (
                     <tr key={file.id} className="border-b border-[var(--color-border-primary)] last:border-0 hover:bg-[var(--color-bg-tertiary)] transition-colors">

@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import type { User } from "@/types";
 
 interface ProfileTabProps {
-  user: User;
+  user: User | null;
   handleSave: () => void;
   isSaving: boolean;
   saveSuccess: boolean;
@@ -19,10 +19,10 @@ export function ProfileTab({ user, handleSave, isSaving, saveSuccess }: ProfileT
         <CardDescription>Update your personal information</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Input label="Display Name" defaultValue={user.displayName} />
-        <Input label="Username" defaultValue={user.username} hint="This is your unique identifier" />
-        <Textarea label="Bio" defaultValue={user.bio || ""} rows={3} />
-        <Input label="Email" type="email" defaultValue={user.email} />
+        <Input label="Display Name" defaultValue={user?.displayName ?? ""} placeholder="Not signed in" />
+        <Input label="Username" defaultValue={user?.username ?? ""} placeholder="Not signed in" hint="This is your unique identifier" />
+        <Textarea label="Bio" defaultValue={user?.bio || ""} rows={3} />
+        <Input label="Email" type="email" defaultValue={user?.email ?? ""} placeholder="Not signed in" />
       </CardContent>
       <CardFooter>
         <Button variant="primary" onClick={handleSave} loading={isSaving}>
