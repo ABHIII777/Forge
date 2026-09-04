@@ -19,7 +19,7 @@ export const createProjectSchema = z.object({
         z.string().trim().min(10).max(2000).optional(),
     ),
     key: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{2,6}$/),
-    workspaceId: z.string(),
+    workspaceId: z.string().uuid(),
     ownerId: z.string().uuid().optional(),
     status: z.enum(["planning","active","on_hold","completed","archived"]).default("planning"),
 })
