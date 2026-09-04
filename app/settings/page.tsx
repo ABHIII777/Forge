@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import { AppShell } from "@/components/layout/AppShell";
-import { mockUsers } from "@/mock-data";
 import { ProfileTab } from "@/features/settings/components/ProfileTab";
 import { AccountTab } from "@/features/settings/components/AccountTab";
 import { AppearanceTab } from "@/features/settings/components/AppearanceTab";
 import { NotificationsTab } from "@/features/settings/components/NotificationsTab";
 import { SecurityTab } from "@/features/settings/components/SecurityTab";
+import type { User } from "@/types";
 
 type SettingsTab = "profile" | "account" | "appearance" | "notifications" | "security";
 
@@ -20,7 +20,8 @@ const tabs: { id: SettingsTab; label: string }[] = [
 ];
 
 export default function SettingsPage() {
-  const user = mockUsers[0];
+  // TODO(api): load real user.
+  const user = null as User | null;
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("profile");
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveSuccess, setSaveSuccess] = React.useState(false);

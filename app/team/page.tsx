@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from "@/components/ui/Input";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatDate } from "@/lib/utils";
-import { mockUsers } from "@/mock-data";
 import { Plus } from "lucide-react";
 
 const roleColors: Record<string, "primary" | "secondary" | "default" | "info"> = {
@@ -54,25 +53,11 @@ export default function GlobalTeamPage() {
                 </tr>
               </thead>
               <tbody>
-                {mockUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-[var(--color-border-primary)] last:border-0 hover:bg-[var(--color-bg-tertiary)] transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          <Avatar name={user.displayName} size="md" />
-                          {user.isOnline && <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[var(--color-status-success)] border-2 border-[var(--color-bg-elevated)]" />}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-[var(--color-text-primary)]">{user.displayName}</p>
-                          <p className="text-xs text-[var(--color-text-muted)] font-mono">@{user.username}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3"><Badge variant={roleColors[user.role]} size="sm">{user.role}</Badge></td>
-                    <td className="px-4 py-3"><span className="flex items-center gap-1.5 text-sm"><span className={`h-2 w-2 rounded-full ${user.isOnline ? "bg-[var(--color-status-success)]" : "bg-[var(--color-text-muted)]"}`} />{user.isOnline ? "Online" : "Offline"}</span></td>
-                    <td className="px-4 py-3 text-[var(--color-text-muted)] font-mono text-xs">{formatDate(user.createdAt)}</td>
-                  </tr>
-                ))}
+                <tr>
+                  <td colSpan={4} className="px-4 py-12 text-center text-[var(--color-text-muted)]">
+                    No members yet
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

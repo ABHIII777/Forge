@@ -9,14 +9,15 @@ import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { formatRelativeTime } from "@/lib/utils";
-import { mockProjects, mockWorkspaces } from "@/mock-data";
+import type { Project } from "@/types";
 import { Plus, Search } from "lucide-react";
 import * as React from "react";
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
-  const filteredProjects = mockProjects.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  // TODO(api): load real projects.
+  const filteredProjects: Project[] = [];
 
   return (
     <AppShell>
@@ -40,7 +41,6 @@ export default function ProjectsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredProjects.map((project) => {
-            const workspace = mockWorkspaces.find((w) => w.id === project.workspaceId);
             return (
               <Link key={project.id} href={`/workspaces/${project.workspaceId}/projects/${project.id}`}>
                 <Card variant="hover" className="p-5 cursor-pointer h-full">
@@ -56,7 +56,6 @@ export default function ProjectsPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
                     <span>{project.openIssueCount} open issues</span>
-                    <span>{workspace?.name}</span>
                   </div>
                 </Card>
               </Link>

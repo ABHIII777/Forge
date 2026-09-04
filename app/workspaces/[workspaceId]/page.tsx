@@ -10,15 +10,17 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import { getWorkspaceById, mockProjects, mockUsers, mockActivities, getUserById } from "@/mock-data";
+import type { ActivityEvent, Project, User, Workspace } from "@/types";
 import { workspaceNav } from "@/lib/constants/navigation";
 
 export default function WorkspaceOverviewPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
-  const workspace = getWorkspaceById(workspaceId);
-  const projects = mockProjects.filter((p) => p.workspaceId === workspaceId);
-  const activities = mockActivities.filter((a) => a.workspaceId === workspaceId);
+  // TODO(api): load real workspace, projects, activities, members.
+  const workspace = undefined as Workspace | undefined;
+  const projects: Project[] = [];
+  const activities: ActivityEvent[] = [];
+  const members: User[] = [];
 
   if (!workspace) {
     return (
@@ -101,7 +103,7 @@ export default function WorkspaceOverviewPage() {
               </div>
               <Card>
                 <div className="divide-y divide-[var(--color-border-primary)]">
-                  {mockUsers.slice(0, 5).map((user) => (
+                  {members.slice(0, 5).map((user) => (
                     <div key={user.id} className="flex items-center gap-3 p-3">
                       <div className="relative">
                         <Avatar name={user.displayName} size="sm" />
@@ -124,7 +126,7 @@ export default function WorkspaceOverviewPage() {
               <Card>
                 <div className="divide-y divide-[var(--color-border-primary)]">
                   {activities.slice(0, 5).map((activity) => {
-                    const user = getUserById(activity.userId);
+                    const user = null as User | null;
                     return (
                       <div key={activity.id} className="flex items-start gap-3 p-3">
                         <Avatar name={user?.displayName} size="sm" />

@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime, formatFileSize } from "@/lib/utils";
-import { mockFiles, getUserById } from "@/mock-data";
+import type { FileItem, User } from "@/types";
 import { Search, Upload, Folder, File, Download, Eye, Trash2 } from "lucide-react";
 
 export default function GlobalFilesPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const filteredFiles = mockFiles.filter((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  // TODO(api): load real files.
+  const allFiles: FileItem[] = [];
+  const filteredFiles = allFiles.filter((f) => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <AppShell>
@@ -46,7 +48,7 @@ export default function GlobalFilesPage() {
               </thead>
               <tbody>
                 {filteredFiles.map((file) => {
-                  const uploader = getUserById(file.uploadedById);
+                  const uploader = null as User | null;
                   const Icon = file.type === "folder" ? Folder : File;
                   return (
                     <tr key={file.id} className="border-b border-[var(--color-border-primary)] last:border-0 hover:bg-[var(--color-bg-tertiary)] transition-colors">

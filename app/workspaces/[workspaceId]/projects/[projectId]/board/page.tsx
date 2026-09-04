@@ -8,8 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
-import { getProjectById, getIssuesByProject, getUserById } from "@/mock-data";
-import type { IssueStatus } from "@/types";
+import type { Issue, IssueStatus, Project, User } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
 
 const columns: { status: IssueStatus; label: string; color: string }[] = [
@@ -24,8 +23,9 @@ export default function BoardPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  const project = getProjectById(projectId);
-  const issues = getIssuesByProject(projectId);
+  // TODO(api): load real project and issues.
+  const project = undefined as Project | undefined;
+  const issues: Issue[] = [];
 
   if (!project) {
     return (
@@ -79,7 +79,7 @@ export default function BoardPage() {
                 </div>
                 <div className="flex-1 space-y-3 min-h-[100px] p-2 bg-[var(--color-bg-secondary)] border-2 border-[var(--color-border-primary)] rounded-[var(--radius-lg)]">
                   {colIssues.map((issue) => {
-                    const assignee = issue.assigneeId ? getUserById(issue.assigneeId) : null;
+                    const assignee = null as User | null;
                     return (
                       <Card key={issue.id} className="p-3 cursor-pointer hover:border-[var(--color-border-secondary)] transition-colors">
                         <div className="flex items-center gap-2 mb-2">

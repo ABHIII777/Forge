@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/Progress";
 import { Separator } from "@/components/ui/Separator";
 import { AppShell } from "@/components/layout/AppShell";
 import { getIssueCountByStatus } from "@/lib/utils";
-import { getProjectById, getIssuesByProject, mockUsers } from "@/mock-data";
+import type { Issue, Project } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
 
 export default function ProjectOverviewPage() {
@@ -19,8 +19,9 @@ export default function ProjectOverviewPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  const project = getProjectById(projectId);
-  const issues = getIssuesByProject(projectId);
+  // TODO(api): load real project, issues, members.
+  const project = undefined as Project | undefined;
+  const issues: Issue[] = [];
 
   if (!project) {
     return (
@@ -157,25 +158,12 @@ export default function ProjectOverviewPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><CardTitle>Team</CardTitle></CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {mockUsers.slice(0, project.memberCount).map((user) => (
-                    <div key={user.id} className="flex items-center gap-3">
-                      <div className="relative">
-                        <Avatar name={user.displayName} size="sm" />
-                        {user.isOnline && <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[var(--color-status-success)] border-2 border-[var(--color-bg-elevated)]" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">{user.displayName}</p>
-                        <p className="text-xs text-[var(--color-text-muted)]">{user.email}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader><CardTitle>Team</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="text-sm text-[var(--color-text-muted)]">No members yet</p>
+                </CardContent>
+              </Card>
           </div>
         </div>
       </div>

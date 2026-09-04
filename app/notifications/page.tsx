@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import { mockNotifications, getUserById } from "@/mock-data";
-import type { NotificationType } from "@/types";
+import type { Notification, NotificationType } from "@/types";
 
 const typeIcons: Record<NotificationType, React.ComponentType<{ className?: string }>> = {
   mention: MessageSquare,
@@ -31,7 +30,8 @@ const typeLabels: Record<NotificationType, string> = {
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = React.useState(mockNotifications);
+  // TODO(api): load real notifications.
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [filter, setFilter] = React.useState<"all" | "unread">("all");
 
   const filteredNotifications = filter === "unread" ? notifications.filter((n) => !n.isRead) : notifications;

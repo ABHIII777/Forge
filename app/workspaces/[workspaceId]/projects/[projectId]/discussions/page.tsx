@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import { getProjectById, getDiscussionsByProject, getUserById } from "@/mock-data";
+import type { Discussion, Project, User } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
 
 const categoryColors: Record<string, string> = {
@@ -26,8 +26,9 @@ export default function DiscussionsPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  const project = getProjectById(projectId);
-  const discussions = getDiscussionsByProject(projectId);
+  // TODO(api): load real project and discussions.
+  const project = undefined as Project | undefined;
+  const discussions: Discussion[] = [];
   const [searchQuery, setSearchQuery] = React.useState("");
 
   if (!project) {
@@ -80,7 +81,7 @@ export default function DiscussionsPage() {
 
         <div className="space-y-3">
           {filteredDiscussions.map((discussion) => {
-            const author = getUserById(discussion.authorId);
+            const author = null as User | null;
             return (
               <Card key={discussion.id} variant="hover" className="p-4 cursor-pointer">
                 <div className="flex items-start gap-4">

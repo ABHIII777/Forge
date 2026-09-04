@@ -11,7 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Input } from "@/components/ui/Input";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import { getProjectById, getIssuesByProject, getUserById } from "@/mock-data";
+import type { Issue, Project, User } from "@/types";
 import { CreateIssueModal } from "@/features/issues/components/CreateIssueModal";
 import { projectNav } from "@/lib/constants/navigation";
 
@@ -20,8 +20,9 @@ export default function IssuesPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  const project = getProjectById(projectId);
-  const allIssues = getIssuesByProject(projectId);
+  // TODO(api): load real project and issues.
+  const project = undefined as Project | undefined;
+  const allIssues: Issue[] = [];
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
@@ -113,7 +114,7 @@ export default function IssuesPage() {
               </thead>
               <tbody>
                 {filteredIssues.map((issue) => {
-                  const assignee = issue.assigneeId ? getUserById(issue.assigneeId) : null;
+                  const assignee = null as User | null;
                   return (
                     <tr key={issue.id} className="border-b border-[var(--color-border-primary)] last:border-0 hover:bg-[var(--color-bg-tertiary)] transition-colors">
                       <td className="px-4 py-3 font-mono text-[var(--color-text-muted)]">#{issue.number}</td>

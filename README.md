@@ -75,8 +75,6 @@ forge/
 │   └── feedback/          # Feedback components (Toast, Skeleton, EmptyState)
 ├── lib/
 │   └── utils.ts           # Utility functions (cn, formatRelativeTime, etc.)
-├── mock-data/
-│   └── index.ts           # Mock data for development
 ├── types/
 │   └── index.ts           # TypeScript type definitions
 └── public/                # Static assets
@@ -92,9 +90,10 @@ Defined in `types/index.ts`:
 - `Label`, `SearchResult`
 - Enums: `Priority`, `IssueStatus`, `ProjectStatus`, `UserRole`, `NotificationType`, `DiscussionCategory`
 
-## Mock Data
+## Data
 
-The app uses client-side mock data (`mock-data/index.ts`) for development. Replace with real API calls when integrating a backend.
+Pages render empty states until their API routes land. Wire each page to its
+backend endpoint listed in `ROADMAP.md` when integrating the backend.
 
 ## Styling
 

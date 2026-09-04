@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { mockUsers } from "@/mock-data";
 import type { Priority } from "@/types";
 
 interface CreateIssueModalProps {
@@ -58,9 +57,7 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
               <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Assignee</label>
               <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className="input-base">
                 <option value="">Unassigned</option>
-                {mockUsers.map((user) => (
-                  <option key={user.id} value={user.id}>{user.displayName}</option>
-                ))}
+                <option value="" disabled>No members yet</option>
               </select>
             </div>
           </div>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import { mockDiscussions, getUserById } from "@/mock-data";
+import type { Discussion, User } from "@/types";
 import { Search, Plus, MessageCircle, Eye, Pin } from "lucide-react";
 
 const categoryColors: Record<string, "info" | "warning" | "default" | "success" | "secondary"> = {
@@ -16,7 +16,9 @@ const categoryColors: Record<string, "info" | "warning" | "default" | "success" 
 
 export default function GlobalDiscussionsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const filteredDiscussions = mockDiscussions.filter((d) => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  // TODO(api): load real discussions.
+  const allDiscussions: Discussion[] = [];
+  const filteredDiscussions = allDiscussions.filter((d) => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <AppShell>
@@ -38,7 +40,7 @@ export default function GlobalDiscussionsPage() {
 
         <div className="space-y-3">
           {filteredDiscussions.map((discussion) => {
-            const author = getUserById(discussion.authorId);
+            const author = null as User | null;
             return (
               <Card key={discussion.id} variant="hover" className="p-4 cursor-pointer">
                 <div className="flex items-start gap-4">

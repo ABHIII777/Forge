@@ -282,8 +282,6 @@ forge/
 │   ├── db.ts                        # Drizzle + postgres.js
 │   ├── utils.ts                     # cn, formatDate, etc.
 │   └── validators.ts               # Zod schemas
-├── mock-data/
-│   └── index.ts                     # 708 lines of mock data
 ├── types/
 │   └── index.ts                     # TypeScript interfaces
 ├── docker-compose.yml               # PostgreSQL 17

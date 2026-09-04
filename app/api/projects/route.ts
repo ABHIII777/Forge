@@ -6,9 +6,24 @@ import { project } from "@/db/schema";
 export async function POST(req: Request) {
     const body = await req.json()
 
-    console.log(body);
+    const parsed = createProjectSchema.safeParse(body);
+    console.log(parsed)
 
-    return NextResponse.json({ message : "Project API endpoint" }, { status: 200 });
+    const { workspaceId, name, description, key, status } = parsed.data;
+
+    try {
+        await db.insert(project).values({
+            name: name,
+            description: description,
+            key: key,
+            workspaceId: workspaceId,
+            status: status
+        })
+
+        return NextResponse.json({ message: "Project data inserted"}, { status: 200 })
+    } catch (err) {
+        return NextResponse.json({ error: err }, { status: 500 })
+    }
 }
 
 export async function GET(req: Request) {

@@ -16,15 +16,18 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Plus,
   Command,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Avatar } from "@/components/ui/Avatar";
-import { mockWorkspaces } from "@/mock-data";
+import type { Workspace } from "@/types";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
+import { WorkspaceList } from "@/features/workspaces/components/WorkspaceList";
+import {
+  CreateWorkspaceModal,
+  type CreateWorkspaceInput,
+} from "@/features/workspaces/components/CreateWorkspaceModal";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -45,8 +48,30 @@ const navItems = [
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const [selectedWorkspace, setSelectedWorkspace] = React.useState(mockWorkspaces[0]);
+  // TODO(api): load real workspaces; session-local until the API lands.
+  const [workspaces, setWorkspaces] = React.useState<Workspace[]>([]);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = React.useState<string | undefined>(undefined);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = React.useState(false);
+
+  const selectedWorkspace = workspaces.find((w) => w.id === selectedWorkspaceId);
+
+  const handleCreateWorkspace = (input: CreateWorkspaceInput) => {
+    const now = new Date();
+    const workspace: Workspace = {
+      id: `ws_${Date.now()}`,
+      name: input.name,
+      slug: input.slug,
+      description: input.description,
+      ownerId: "",
+      memberCount: 1,
+      projectCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setWorkspaces((prev) => [...prev, workspace]);
+    setSelectedWorkspaceId(workspace.id);
+  };
 
   return (
     <aside
@@ -85,29 +110,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}
       </div>
 
-      {/* Workspace Selector */}
-      {!collapsed && (
-        <div className="p-3 border-b-2 border-[var(--color-border-primary)]">
-          <div className="relative">
-            <select
-              value={selectedWorkspace.id}
-              onChange={(e) => {
-                const ws = mockWorkspaces.find((w) => w.id === e.target.value);
-                if (ws) setSelectedWorkspace(ws);
-              }}
-              className="w-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] border-2 border-[var(--color-border-primary)] rounded-[var(--radius-md)] px-3 py-2 text-sm font-mono appearance-none cursor-pointer focus:border-[var(--color-border-focus)] focus:outline-none"
-              aria-label="Select workspace"
-            >
-              {mockWorkspaces.map((ws) => (
-                <option key={ws.id} value={ws.id}>
-                  {ws.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)] pointer-events-none" />
-          </div>
-        </div>
-      )}
+      {/* Workspaces */}
+      <WorkspaceList
+        workspaces={workspaces}
+        selectedId={selectedWorkspaceId}
+        collapsed={collapsed}
+        onSelect={setSelectedWorkspaceId}
+        onNew={() => setIsCreateWorkspaceOpen(true)}
+      />
 
       {/* New Project Button */}
       <div className="p-3 border-b-2 border-[var(--color-border-primary)]">
@@ -172,7 +182,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <CreateProjectModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        defaultWorkspaceId={selectedWorkspace.id}
+        defaultWorkspaceId={selectedWorkspace?.id}
+      />
+      <CreateWorkspaceModal
+        open={isCreateWorkspaceOpen}
+        onOpenChange={setIsCreateWorkspaceOpen}
+        onCreate={handleCreateWorkspace}
       />
     </aside>
   );

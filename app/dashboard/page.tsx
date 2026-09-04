@@ -21,14 +21,7 @@ import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { formatRelativeTime, getInitials } from "@/lib/utils";
-import {
-  mockProjects,
-  mockIssues,
-  mockUsers,
-  mockActivities,
-  mockWorkspaces,
-  getUserById,
-} from "@/mock-data";
+import type { ActivityEvent, Issue, Project, User } from "@/types";
 
 import { useEffect, useState } from "react";
 
@@ -49,9 +42,11 @@ const stats = [
 ];
 
 export default function DashboardPage() {
-  const currentUser = mockUsers[0];
-  const recentIssues = mockIssues.filter((i) => i.status !== "done").slice(0, 5);
-  const onlineUsers = mockUsers.filter((u) => u.isOnline);
+  // TODO(api): load real user, projects, issues, activities.
+  const recentProjects: Project[] = [];
+  const recentIssues: Issue[] = [];
+  const onlineUsers: User[] = [];
+  const recentActivities: ActivityEvent[] = [];
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   
   const [user, setUser] = useState<any[]>([]);
@@ -117,7 +112,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="space-y-3">
-              {mockProjects.slice(0, 4).map((project) => (
+              {recentProjects.map((project) => (
                 <Link key={project.id} href={`/workspaces/ws_01/projects/${project.id}`}>
                   <Card variant="hover" className="p-4 cursor-pointer">
                     <div className="flex items-start justify-between">
@@ -160,14 +155,12 @@ export default function DashboardPage() {
             </div>
             <Card>
               <div className="divide-y divide-[var(--color-border-primary)]">
-                {mockActivities.slice(0, 6).map((activity) => {
-                  const user = getUserById(activity.userId);
+                {recentActivities.map((activity) => {
                   return (
                     <div key={activity.id} className="flex items-start gap-3 p-4">
-                      <Avatar name={user?.displayName} size="sm" />
+                      <Avatar size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-[var(--color-text-primary)]">
-                          <span className="font-medium">{user?.displayName}</span>{" "}
                           {activity.description}
                         </p>
                         <p className="text-xs text-[var(--color-text-muted)] font-mono mt-1">
