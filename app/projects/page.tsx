@@ -16,8 +16,23 @@ import * as React from "react";
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
-  // TODO(api): load real projects.
-  const filteredProjects: Project[] = [];
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [projectId, setProjectId] = React.useState<string | undefined>(undefined);
+  
+  React.useEffect(() => {
+    fetch("/api/projects")
+      .then((res) => (res.ok ? res.json() : { projects: [] }))
+      .then((data) => {
+        const rows = (data.projects ?? []) as Project[];
+        setProjects(rows);
+        setProjectId((prev) => prev ?? rows[0]?.id)
+      })
+      .catch((err) => console.log(err))
+  }, [])
+
+  const filteredProjects = projects.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <AppShell>
