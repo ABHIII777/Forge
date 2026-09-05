@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -14,16 +15,58 @@ import { getIssueCountByStatus } from "@/lib/utils";
 import type { Issue, Project } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
 
+interface ProjectDetail {
+  project: Project;
+  issues: Issue[];
+  counts: { open: number; total: number; members: number };
+}
+
 export default function ProjectOverviewPage() {
   const params = useParams();
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  // TODO(api): load real project, issues, members.
-  const project = undefined as Project | undefined;
-  const issues: Issue[] = [];
+  const [data, setData] = React.useState<ProjectDetail | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [notFound, setNotFound] = React.useState(false);
 
-  if (!project) {
+  React.useEffect(() => {
+    setIsLoading(true);
+    setNotFound(false);
+    fetch(`/api/projects/${projectId}`)
+      .then((res) => {
+        if (res.status === 404) {
+          setNotFound(true);
+          return null;
+        }
+        if (!res.ok) throw new Error("Failed to load project");
+        return res.json();
+      })
+      .then((payload) => {
+        if (payload) setData(payload as ProjectDetail);
+      })
+      .catch((err) => {
+        console.log(err);
+        setNotFound(true);
+      })
+      .finally(() => setIsLoading(false));
+  }, [projectId]);
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-[var(--color-text-muted)]">Loading project…</p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const project = data?.project;
+  const issues = data?.issues ?? [];
+  const counts = data?.counts ?? { open: 0, total: 0, members: 0 };
+
+  if (!project || project.workspaceId !== workspaceId) {
     return (
       <AppShell>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -77,15 +120,15 @@ export default function ProjectOverviewPage() {
               </Card>
               <Card className="p-4">
                 <p className="text-sm text-[var(--color-text-muted)]">Open Issues</p>
-                <p className="text-2xl font-bold font-mono text-[var(--color-text-primary)] mt-2">{project.openIssueCount}</p>
+                <p className="text-2xl font-bold font-mono text-[var(--color-text-primary)] mt-2">{counts.open}</p>
               </Card>
               <Card className="p-4">
                 <p className="text-sm text-[var(--color-text-muted)]">Total Issues</p>
-                <p className="text-2xl font-bold font-mono text-[var(--color-text-primary)] mt-2">{project.issueCount}</p>
+                <p className="text-2xl font-bold font-mono text-[var(--color-text-primary)] mt-2">{counts.total}</p>
               </Card>
               <Card className="p-4">
                 <p className="text-sm text-[var(--color-text-muted)]">Members</p>
-                <p className="text-2xl font-bold font-mono text-[var(--color-text-primary)] mt-2">{project.memberCount}</p>
+                <p className="text-2xl font-bold font-mono text-[var(--color-text-primary)] mt-2">{counts.members}</p>
               </Card>
             </div>
 
@@ -144,7 +187,7 @@ export default function ProjectOverviewPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-[var(--color-text-secondary)]">Open Issues</span>
-                    <span className="text-sm font-mono text-[var(--color-status-warning)]">{project.openIssueCount}</span>
+                    <span className="text-sm font-mono text-[var(--color-status-warning)]">{counts.open}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-[var(--color-text-secondary)]">Completed</span>

@@ -54,7 +54,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = React.useState(false);
 
   const selectedWorkspace = workspaces.find((w) => w.id === selectedWorkspaceId);
-
   React.useEffect(() => {
     fetch("/api/workspaces")
       .then((res) => (res.ok ? res.json() : { workspaces: [] }))
@@ -67,7 +66,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   }, []);
 
   const handleCreateWorkspace = async (input: CreateWorkspaceInput) => {
-    // Optimistic draft for instant feedback; swapped for the server row below.
     const now = new Date();
     const draft: Workspace = {
       id: `ws_${Date.now()}`,

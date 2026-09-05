@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { createProjectSchema } from "@/lib/validators";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -40,7 +41,21 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-
+  const { searchParams } = new URL(req.url);
+  const workspaceId = searchParams.get("workspaceId");
+  if (workspaceId) {
+    const check = z.string().uuid().safeParse(workspaceId);
+    if (!check.success) return NextResponse.json({ error: "Invalid workspaceId" }, { status: 400 });
+  }
+  try {
+    const rows = await db.query.project.findMany({
+      where: workspaceId ? eq(project.workspaceId, workspaceId) : undefined,
+      orderBy: (p, { desc }) => [desc(p.createdAt)],
+    });
+    return NextResponse.json({ projects: rows }, { status: 200 });
+  } catch {
+    return NextResponse.json({ error: "Failed to load projects" }, { status: 500 });
+  }
 }
 
 function pgErrorCode(e: unknown): string | undefined {
