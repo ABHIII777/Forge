@@ -10,13 +10,18 @@ import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Issue, Project, User } from "@/types";
 import { Search, Plus } from "lucide-react";
+import { CreateIssueModal } from "@/features/issues/components/CreateIssueModal";
 
 export default function GlobalIssuesPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = React.useState<string>("");
-  const allIssues: Issue[] = [];
+  const [issues, setIssues] = React.useState<Issue[]>([]);
+  const [selectedIssue, setSelectedIssue] = React.useState<string>("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+
+  // const allIssues: Issue[] = [];
 
   React.useEffect(() => {
     fetch("/api/projects")
@@ -29,16 +34,29 @@ export default function GlobalIssuesPage() {
       .catch((err) => console.log(err));
   }, []);
 
-  const filteredIssues = allIssues.filter((issue) => {
-    const matchesSearch = issue.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || issue.status === statusFilter;
+  React.useEffect(() => {
+    if (!selectedProjectId) {
+      return
+    }
+    fetch(`/api/issues?projectId=${selectedProjectId}`)
+      .then((res) => (res.ok ? res.json() : { issue : [] }))
+      .then((data) => {
+        const rows = (data.issues ?? []) as Issue[];
+        setIssues(rows)
+        setSelectedIssue((prev) => prev || rows[0]?.id || "")
+      })
+      .catch((err) => console.log(err))
+  }, [selectedProjectId])
+
+  console.log(issues)
+
+  const filteredIssues = issues.filter((issues) => {
+    const matchesSearch = issues.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || issues.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const selectedProject = projects.find((p) => p.id === selectedProjectId);
-  const newIssueHref = selectedProject
-    ? `/workspaces/${selectedProject.workspaceId}/projects/${selectedProject.id}/issues/new`
-    : "#";
+  console.log(filteredIssues);
 
   return (
     <AppShell>
@@ -62,11 +80,9 @@ export default function GlobalIssuesPage() {
                 </option>
               ))}
             </select>
-            <Link href={newIssueHref} aria-disabled={!selectedProject}>
-              <Button variant="primary" size="sm" disabled={!selectedProject}>
-                <Plus className="h-4 w-4" /> New Issue
-              </Button>
-            </Link>
+            <Button variant="primary" size="sm" disabled={!selectedProjectId} onClick={() => setIsCreateModalOpen(true)}>
+              <Plus className="h-4 w-4" /> New Issue
+            </Button>
           </div>
         </div>
 
@@ -126,6 +142,8 @@ export default function GlobalIssuesPage() {
           </div>
         </Card>
       </div>
+
+      <CreateIssueModal projectId={selectedProjectId} open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}/>
     </AppShell>
   );
 }

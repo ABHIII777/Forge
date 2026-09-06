@@ -55,3 +55,13 @@ export const createIssueSchema = z.object({
 
     labelIds: z.array(z.string().uuid()).default([]),
 })
+
+export const createLabelSchema = z.object({
+    projectId: z.string().uuid(),
+    name: z.string().trim().min(1).max(50),
+    color: z.string().trim().toLowerCase().regex(/^#[0-9a-f]{6}$/),
+    description: z.preprocess(
+        (v) => (v === "" ? undefined : v),
+        z.string().trim().max(500).optional()
+    ),
+})
