@@ -19,10 +19,46 @@ export default function IssueDetailPage() {
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
   const issueId = params.issueId as string;
-  // TODO(api): load real project and issue.
-  const project = undefined as Project | undefined;
-  const issue = undefined as Issue | undefined;
   const [comment, setComment] = React.useState("");
+  const [project, setProject] = React.useState<Project | null>(null)
+  const [issue, setIssue] = React.useState<Issue | null>(null)
+  const [isLoading, setIsLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    fetch(`/api/issues/${issueId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setIssue((data?.issue ?? null) as Issue | null)
+      })
+      .catch((err) => {
+        console.log(err)
+        setIssue(null)
+      })
+  }, [issueId])
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    fetch(`/api/projects/${projectId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setProject((data?.project ?? null) as Project | null)
+      })
+      .catch((err) => {
+        console.log(err);
+        setProject(null)
+      })
+      .finally(() => setIsLoading(false));
+  }, [projectId])
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-[var(--color-text-muted)]">Loading issues…</p>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (!project || !issue) {
     return (
@@ -75,11 +111,11 @@ export default function IssueDetailPage() {
             </Card>
 
             {/* Labels */}
-            {issue.labels.length > 0 && (
+            {(issue.labels ?? []).length > 0 && (
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-[var(--color-text-muted)]" />
                 <div className="flex flex-wrap gap-2">
-                  {issue.labels.map((label) => (
+                  {(issue.labels ?? []).map((label) => (
                     <span key={label.id} className="px-2 py-1 text-xs font-mono rounded-[var(--radius-sm)] border" style={{ backgroundColor: `${label.color}20`, color: label.color, borderColor: `${label.color}40` }}>{label.name}</span>
                   ))}
                 </div>
