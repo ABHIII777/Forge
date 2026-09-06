@@ -45,29 +45,16 @@ export default function NewIssuePage() {
                 rows={4}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                    Status
-                  </label>
-                  <select name="status" defaultValue="backlog" className="input-base">
-                    <option value="backlog">Backlog</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="review">Review</option>
-                    <option value="done">Done</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                    Priority
-                  </label>
-                  <select name="priority" defaultValue="medium" className="input-base">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
+                  Priority
+                </label>
+                <select name="priority" defaultValue="medium" className="input-base">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
               </div>
 
               <div>
@@ -82,25 +69,14 @@ export default function NewIssuePage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                    Due date
-                  </label>
-                  <input type="date" name="dueDate" defaultValue="" className="input-base" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                    Start date
-                  </label>
-                  <input type="date" name="startedAt" defaultValue="" className="input-base" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
-                    Completed date
-                  </label>
-                  <input type="date" name="completedAt" defaultValue="" className="input-base" />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
+                  Due date
+                </label>
+                <input type="date" name="dueDate" defaultValue="" className="input-base" />
+                <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
+                  Optional. Start and completion dates are set automatically as the issue moves.
+                </p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">
