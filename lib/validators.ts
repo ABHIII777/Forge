@@ -65,3 +65,11 @@ export const createLabelSchema = z.object({
         z.string().trim().max(500).optional()
     ),
 })
+
+export const createCommentSchema = z.object({
+  issueId: z.string().uuid().optional(),
+  discussionId: z.string().uuid().optional(),
+  content: z.string().trim().min(1).max(5000),
+}).refine((v) => (v.issueId ? !v.discussionId : !!v.discussionId), {
+  message: "Exactly one of issueId or discussionId is required",
+});

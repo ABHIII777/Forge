@@ -9,20 +9,36 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Separator } from "@/components/ui/Separator";
+import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime, formatDate } from "@/lib/utils";
-import type { Issue, Project, User as AppUser } from "@/types";
+import type { Comment, Issue, Project, User as AppUser } from "@/types";
 
 export default function IssueDetailPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
   const issueId = params.issueId as string;
+
   const [comment, setComment] = React.useState("");
+  const [showComments, setShowComments] = React.useState<Comment[]>([])
+
   const [project, setProject] = React.useState<Project | null>(null)
   const [issue, setIssue] = React.useState<Issue | null>(null)
+
+  const [usersById, setUsersById] = React.useState<Record<string, AppUser>>({})
+
   const [isLoading, setIsLoading] = React.useState(true)
+
+  const [openPanel, setOpenPanel] = React.useState<"status" | "assignee" | "edit" | null>(null);
+
+  const [draftAssigneeId, setDraftAssigneeId] = React.useState<string>("");
+  const [draftDueDate, setDraftDueDate] = React.useState("");
+  const [draftStatus, setDraftStatus] = React.useState<Issue["status"]>("backlog");
+  const [draftTitle, setDraftTitle] = React.useState<string>("");
+  const [draftPriority, setDraftPriority] = React.useState<Issue["priority"]>("medium");
+  const [draftDescription, setDraftDescription] = React.useState<string>("");
 
   React.useEffect(() => {
     fetch(`/api/issues/${issueId}`)
@@ -37,7 +53,6 @@ export default function IssueDetailPage() {
   }, [issueId])
 
   React.useEffect(() => {
-    setIsLoading(true);
     fetch(`/api/projects/${projectId}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -49,6 +64,29 @@ export default function IssueDetailPage() {
       })
       .finally(() => setIsLoading(false));
   }, [projectId])
+
+  React.useEffect(() => {
+    fetch("/api/users")
+      .then((res) => (res.ok ? res.json() : { users: [] }))
+      .then((data) => {
+        const rows = (data.users ?? []) as AppUser[];
+        setUsersById(Object.fromEntries(rows.map((u) => [u.id, u])));
+      })
+      .catch((err) => console.log(err));
+  }, [])
+
+  React.useEffect(() => {
+    fetch(`/api/issueComments?issueId=${issueId}`)
+      .then((res) => (res.ok ? res.json() : { comment: [] }))
+      .then((data) => {
+        const row = (data?.comments ?? []) as Comment[]
+        setShowComments(row)
+      })
+      .catch((err) => {
+        console.log(err)
+        setShowComments([])
+      })
+  }, [issueId])
 
   if (isLoading) {
     return (
@@ -75,6 +113,45 @@ export default function IssueDetailPage() {
 
   const assignee = null as AppUser | null;
   const reporter = null as AppUser | null;
+
+  const togglePanel = (panel: "status" | "assignee" | "edit") => {
+    if (!issue) return;
+    if (openPanel !== panel) {
+      setDraftStatus(issue.status);
+      setDraftAssigneeId(issue.assigneeId ?? "");
+      setDraftTitle(issue.title);
+      setDraftDescription(issue.description ?? "");
+      setDraftPriority(issue.priority);
+      setDraftDueDate("");
+    }
+    setOpenPanel((prev) => (prev === panel ? null : panel));
+  };
+
+  const handleIssueComments = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+
+    const data = await fetch("/api/issueComments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        issueId: issueId,
+        content: comment.trim(),
+      })
+    })
+
+    const res = await data.json()
+
+    if (data.ok) {
+      console.log("looks like everything is fine")
+    } else {
+      console.log("Something went wrong")
+      console.log("Error occured: ", res)
+    }
+    setComment("")
+  }
 
   return (
     <AppShell>
@@ -127,33 +204,38 @@ export default function IssueDetailPage() {
             {/* Comments */}
             <div>
               <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">Comments ({issue.commentsCount})</h2>
-              
+
               {/* Comment Input */}
               <Card className="mb-4">
                 <CardContent>
                   <Textarea placeholder="Add a comment..." value={comment} onChange={(e) => setComment(e.target.value)} rows={3} />
                   <div className="flex justify-end mt-3">
-                    <Button variant="primary" size="sm" disabled={!comment.trim()}>Comment</Button>
+                    <Button variant="primary" size="sm" disabled={!comment.trim()} onClick={handleIssueComments}>Comment</Button>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Mock Comments */}
               <div className="space-y-4">
-                <Card>
-                  <CardContent>
-                    <div className="flex items-start gap-3">
-                      <Avatar name={reporter?.displayName} size="sm" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-[var(--color-text-primary)]">{reporter?.displayName}</span>
-                          <span className="text-xs text-[var(--color-text-muted)] font-mono">{formatRelativeTime(issue.createdAt)}</span>
+                {showComments.map((comment) => {
+                  const reporter = usersById[comment.authorId]
+                  return (
+                    <Card key={comment.id}>
+                      <CardContent>
+                        <div className="flex items-start gap-3">
+                          <Avatar name={reporter?.displayName} size="sm" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium text-[var(--color-text-primary)]">{reporter?.displayName}</span>
+                              <span className="text-xs text-[var(--color-text-muted)] font-mono">{formatRelativeTime(issue.createdAt)}</span>
+                            </div>
+                            <p className="text-sm text-[var(--color-text-secondary)]">{comment.content}</p>
+                          </div>
                         </div>
-                        <p className="text-sm text-[var(--color-text-secondary)]">I can reproduce this issue consistently. The WebSocket connection drops and never recovers.</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
                 {assignee && (
                   <Card>
                     <CardContent>
@@ -226,9 +308,148 @@ export default function IssueDetailPage() {
             <Card>
               <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="secondary" size="sm" className="w-full justify-start">Change Status</Button>
-                <Button variant="secondary" size="sm" className="w-full justify-start">Change Assignee</Button>
-                <Button variant="secondary" size="sm" className="w-full justify-start">Edit Issue</Button>
+                <div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => togglePanel("status")}
+                  >
+                    Change Status
+                  </Button>
+                  {openPanel === "status" && (
+                    <div className="mt-2 space-y-1 rounded-[var(--radius-md)] border-2 border-[var(--color-border-primary)] bg-[var(--color-bg-tertiary)] p-2">
+                      {(["backlog", "in_progress", "review", "done"] as const).map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setDraftStatus(s)}
+                          className={`flex w-full items-center justify-between rounded-[var(--radius-sm)] px-2 py-1.5 text-sm transition-colors ${draftStatus === s
+                            ? "bg-[var(--color-accent-primary-muted)] text-[var(--color-text-primary)]"
+                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
+                            }`}
+                        >
+                          <span className="capitalize">{s.replace("_", " ")}</span>
+                          {draftStatus === s && (
+                            <Badge
+                              variant={s === "done" ? "success" : s === "in_progress" ? "warning" : s === "review" ? "info" : "default"}
+                              size="sm"
+                            >
+                              Current
+                            </Badge>
+                          )}
+                        </button>
+                      ))}
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setOpenPanel(null)}>
+                          Cancel
+                        </Button>
+                        <Button type="button" variant="primary" size="sm" onClick={() => setOpenPanel(null)}>
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => togglePanel("assignee")}
+                  >
+                    Change Assignee
+                  </Button>
+                  {openPanel === "assignee" && (
+                    <div className="mt-2 space-y-1 rounded-[var(--radius-md)] border-2 border-[var(--color-border-primary)] bg-[var(--color-bg-tertiary)] p-2">
+                      <label className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]">
+                        <input
+                          type="radio"
+                          name="detail-assignee"
+                          checked={draftAssigneeId === ""}
+                          onChange={() => setDraftAssigneeId("")}
+                          className="h-4 w-4"
+                        />
+                        Unassigned
+                      </label>
+                      <p className="px-2 py-1 text-xs text-[var(--color-text-muted)]">
+                        Team members will appear here once available.
+                      </p>
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setOpenPanel(null)}>
+                          Cancel
+                        </Button>
+                        <Button type="button" variant="primary" size="sm" onClick={() => setOpenPanel(null)}>
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => togglePanel("edit")}
+                  >
+                    Edit Issue
+                  </Button>
+                  {openPanel === "edit" && (
+                    <div className="mt-2 space-y-3 rounded-[var(--radius-md)] border-2 border-[var(--color-border-primary)] bg-[var(--color-bg-tertiary)] p-3">
+                      <Input
+                        label="Title"
+                        value={draftTitle}
+                        onChange={(e) => setDraftTitle(e.target.value)}
+                      />
+                      <Textarea
+                        label="Description"
+                        value={draftDescription}
+                        onChange={(e) => setDraftDescription(e.target.value)}
+                        rows={3}
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-[var(--color-text-primary)]">
+                            Priority
+                          </label>
+                          <select
+                            value={draftPriority}
+                            onChange={(e) => setDraftPriority(e.target.value as typeof draftPriority)}
+                            className="input-base"
+                          >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-[var(--color-text-primary)]">
+                            Due date
+                          </label>
+                          <input
+                            type="date"
+                            value={draftDueDate}
+                            onChange={(e) => setDraftDueDate(e.target.value)}
+                            className="input-base"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setOpenPanel(null)}>
+                          Cancel
+                        </Button>
+                        <Button type="button" variant="primary" size="sm" onClick={() => setOpenPanel(null)}>
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <Button variant="danger" size="sm" className="w-full justify-start">Delete Issue</Button>
               </CardContent>
             </Card>
