@@ -3,12 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { Plus, Search, Filter, ChevronDown } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
-import { Input } from "@/components/ui/Input";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Issue, Project, User } from "@/types";
@@ -20,13 +19,48 @@ export default function IssuesPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  // TODO(api): load real project and issues.
-  const project = undefined as Project | undefined;
-  const allIssues: Issue[] = [];
+  const [issues, setIssues] = React.useState<Issue[]>([]);
+  const [project, setProject] = React.useState<Project | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
   const [createModalOpen, setCreateModalOpen] = React.useState(false);
+
+
+  React.useEffect(() => {
+    fetch(`/api/issues?projectId=${projectId}`)
+      .then((res) => (res.ok ? res.json() : { issues : [] }))
+      .then((data) => {
+        const rows = (data.issues ?? []) as Issue[];
+        setIssues(rows)
+      })
+      .catch((err) => console.log(err))
+  }, [projectId])
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    fetch(`/api/projects/${projectId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setProject((data?.project ?? null) as Project | null)
+      })
+      .catch((err) => {
+        console.log(err);
+        setProject(null)
+      })
+      .finally(() => setIsLoading(false));
+  }, [projectId])
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-[var(--color-text-muted)]">Loading issues…</p>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (!project) {
     return (
@@ -41,7 +75,7 @@ export default function IssuesPage() {
     );
   }
 
-  const filteredIssues = allIssues.filter((issue) => {
+  const filteredIssues = issues.filter((issue) => {
     const matchesSearch = issue.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || issue.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || issue.priority === priorityFilter;
@@ -141,10 +175,10 @@ export default function IssuesPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
-                          {issue.labels.slice(0, 2).map((label) => (
+                          {(issue.labels ?? []).slice(0, 2).map((label) => (
                             <span key={label.id} className="px-1.5 py-0.5 text-[10px] font-mono rounded-[var(--radius-sm)] border" style={{ backgroundColor: `${label.color}20`, color: label.color, borderColor: `${label.color}40` }}>{label.name}</span>
                           ))}
-                          {issue.labels.length > 2 && <span className="text-xs text-[var(--color-text-muted)]">+{issue.labels.length - 2}</span>}
+                          {(issue.labels ?? []).length > 2 && <span className="text-xs text-[var(--color-text-muted)]">+{(issue.labels ?? []).length - 2}</span>}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-[var(--color-text-muted)] font-mono text-xs">{formatRelativeTime(issue.updatedAt)}</td>
@@ -164,7 +198,7 @@ export default function IssuesPage() {
 
         {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-[var(--color-text-muted)]">Showing {filteredIssues.length} of {allIssues.length} issues</p>
+          <p className="text-sm text-[var(--color-text-muted)]">Showing {filteredIssues.length} of {issues.length} issues</p>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" disabled>Previous</Button>
             <Button variant="secondary" size="sm" disabled>Next</Button>
