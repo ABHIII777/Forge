@@ -28,6 +28,7 @@ export default function IssueDetailPage() {
   const [issue, setIssue] = React.useState<Issue | null>(null)
 
   const [usersById, setUsersById] = React.useState<Record<string, AppUser>>({})
+  const [users, setUsers] = React.useState<AppUser[]>([]);
 
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -39,6 +40,7 @@ export default function IssueDetailPage() {
   const [draftTitle, setDraftTitle] = React.useState<string>("");
   const [draftPriority, setDraftPriority] = React.useState<Issue["priority"]>("medium");
   const [draftDescription, setDraftDescription] = React.useState<string>("");
+  const [panelError, setPanelError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     fetch(`/api/issues/${issueId}`)
@@ -70,6 +72,7 @@ export default function IssueDetailPage() {
       .then((res) => (res.ok ? res.json() : { users: [] }))
       .then((data) => {
         const rows = (data.users ?? []) as AppUser[];
+        setUsers(rows)
         setUsersById(Object.fromEntries(rows.map((u) => [u.id, u])));
       })
       .catch((err) => console.log(err));
@@ -116,6 +119,7 @@ export default function IssueDetailPage() {
 
   const togglePanel = (panel: "status" | "assignee" | "edit") => {
     if (!issue) return;
+    setPanelError(null);
     if (openPanel !== panel) {
       setDraftStatus(issue.status);
       setDraftAssigneeId(issue.assigneeId ?? "");
@@ -127,9 +131,30 @@ export default function IssueDetailPage() {
     setOpenPanel((prev) => (prev === panel ? null : panel));
   };
 
+  const handleUpdates = async (patch: Record<string, unknown>) => {
+    setPanelError(null);
+
+    const data = await fetch(`/api/issues/${issueId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify(patch)
+    })
+
+    const res = await data.json()
+
+    if (!data.ok) {
+      setPanelError(typeof res?.error === "string" ? res.error : "Something went wrong");
+      return;
+    }
+
+    setIssue(res.issue as Issue);
+    setOpenPanel(null);
+  }
+
   const handleIssueComments = async (e: React.FormEvent) => {
     e.preventDefault();
-
 
     const data = await fetch("/api/issueComments", {
       method: "POST",
@@ -344,10 +369,15 @@ export default function IssueDetailPage() {
                         <Button type="button" variant="ghost" size="sm" onClick={() => setOpenPanel(null)}>
                           Cancel
                         </Button>
-                        <Button type="button" variant="primary" size="sm" onClick={() => setOpenPanel(null)}>
+                        <Button type="button" variant="primary" size="sm" onClick={() => handleUpdates({ status: draftStatus })}>
                           Save
                         </Button>
                       </div>
+                      {openPanel === "status" && panelError && (
+                        <p className="pt-1 text-xs text-[var(--color-status-error)]" role="alert">
+                          {panelError}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -367,23 +397,44 @@ export default function IssueDetailPage() {
                         <input
                           type="radio"
                           name="detail-assignee"
-                          checked={draftAssigneeId === ""}
                           onChange={() => setDraftAssigneeId("")}
                           className="h-4 w-4"
                         />
                         Unassigned
                       </label>
-                      <p className="px-2 py-1 text-xs text-[var(--color-text-muted)]">
-                        Team members will appear here once available.
-                      </p>
+                      {
+                        users.map((user) => {
+                          return (
+                            <div key={user.id}>
+                              <label className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]">
+                                <input
+                                  type="radio"
+                                  name="detail-assignee"
+                                  onChange={() => setDraftAssigneeId(user.id)}
+                                  className="h-4 w-4"
+                                />
+                                {user.displayName}
+                              </label>
+                            </div>
+                          )
+                        })
+                      }
                       <div className="flex justify-end gap-2 pt-1">
                         <Button type="button" variant="ghost" size="sm" onClick={() => setOpenPanel(null)}>
                           Cancel
                         </Button>
-                        <Button type="button" variant="primary" size="sm" onClick={() => setOpenPanel(null)}>
+                        <Button type="button" 
+                          variant="primary" 
+                          size="sm" 
+                          onClick={() => handleUpdates({ assigneeId: draftAssigneeId === "" ? null : draftAssigneeId })}>
                           Save
                         </Button>
                       </div>
+                      {openPanel === "assignee" && panelError && (
+                        <p className="pt-1 text-xs text-[var(--color-status-error)]" role="alert">
+                          {panelError}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -442,10 +493,25 @@ export default function IssueDetailPage() {
                         <Button type="button" variant="ghost" size="sm" onClick={() => setOpenPanel(null)}>
                           Cancel
                         </Button>
-                        <Button type="button" variant="primary" size="sm" onClick={() => setOpenPanel(null)}>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleUpdates({
+                            title: draftTitle,
+                            description: draftDescription,
+                            priority: draftPriority,
+                            dueDate: draftDueDate,
+                          })}
+                        >
                           Save
                         </Button>
                       </div>
+                      {openPanel === "edit" && panelError && (
+                        <p className="pt-1 text-xs text-[var(--color-status-error)]" role="alert">
+                          {panelError}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
