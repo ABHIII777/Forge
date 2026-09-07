@@ -9,6 +9,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Discussion, User } from "@/types";
 import { Search, Plus, MessageCircle, Eye, Pin } from "lucide-react";
+import { CreateDiscussionModal } from "@/features/discussions/components/CreateDiscussionModal";
 
 const categoryColors: Record<string, "info" | "warning" | "default" | "success" | "secondary"> = {
   technical: "info", proposal: "warning", general: "default", announcement: "success", question: "secondary",
@@ -16,7 +17,8 @@ const categoryColors: Record<string, "info" | "warning" | "default" | "success" 
 
 export default function GlobalDiscussionsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  // TODO(api): load real discussions.
+  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false)
+
   const allDiscussions: Discussion[] = [];
   const filteredDiscussions = allDiscussions.filter((d) => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -28,7 +30,10 @@ export default function GlobalDiscussionsPage() {
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Discussions</h1>
             <p className="text-[var(--color-text-secondary)] mt-1">Technical discussions across your workspaces</p>
           </div>
-          <Button variant="primary" size="sm"><Plus className="h-4 w-4" /> New Discussion</Button>
+          <Button variant="primary" size="sm" onClick={() => setIsCreateModalOpen(true)}>
+            <Plus className="h-4 w-4" />
+            New Discussion
+          </Button>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
@@ -64,6 +69,7 @@ export default function GlobalDiscussionsPage() {
           })}
         </div>
       </div>
+    <CreateDiscussionModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}/>
     </AppShell>
   );
 }
