@@ -73,3 +73,23 @@ export const createCommentSchema = z.object({
 }).refine((v) => (v.issueId ? !v.discussionId : !!v.discussionId), {
   message: "Exactly one of issueId or discussionId is required",
 });
+
+export const updateIssueSchema = z.object({
+  title: z.string().trim().min(3).max(200).optional(),
+  description: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().trim().min(10).max(2000).optional(),
+  ),
+  status: z.enum(["backlog", "in_progress", "review", "done"]).optional(),
+  priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+  assigneeId: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().uuid().nullable().optional(),
+  ),
+  dueDate: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    z.coerce.date().nullable().optional(),
+  ),
+}).refine((v) => Object.values(v).some((x) => x !== undefined), {
+  message: "Nothing to update",
+});
