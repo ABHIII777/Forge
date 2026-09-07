@@ -67,29 +67,46 @@ export const createLabelSchema = z.object({
 })
 
 export const createCommentSchema = z.object({
-  issueId: z.string().uuid().optional(),
-  discussionId: z.string().uuid().optional(),
-  content: z.string().trim().min(1).max(5000),
+    issueId: z.string().uuid().optional(),
+    discussionId: z.string().uuid().optional(),
+    content: z.string().trim().min(1).max(5000),
 }).refine((v) => (v.issueId ? !v.discussionId : !!v.discussionId), {
-  message: "Exactly one of issueId or discussionId is required",
+    message: "Exactly one of issueId or discussionId is required",
 });
 
 export const updateIssueSchema = z.object({
-  title: z.string().trim().min(3).max(200).optional(),
-  description: z.preprocess(
-    (v) => (v === "" ? undefined : v),
-    z.string().trim().min(10).max(2000).optional(),
-  ),
-  status: z.enum(["backlog", "in_progress", "review", "done"]).optional(),
-  priority: z.enum(["low", "medium", "high", "critical"]).optional(),
-  assigneeId: z.preprocess(
-    (v) => (v === "" ? undefined : v),
-    z.string().uuid().nullable().optional(),
-  ),
-  dueDate: z.preprocess(
-    (v) => (v === "" || v === undefined || v === null ? undefined : v),
-    z.coerce.date().nullable().optional(),
-  ),
+    title: z.string().trim().min(3).max(200).optional(),
+    description: z.preprocess(
+        (v) => (v === "" ? undefined : v),
+        z.string().trim().min(10).max(2000).optional(),
+    ),
+    status: z.enum(["backlog", "in_progress", "review", "done"]).optional(),
+    priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+    assigneeId: z.preprocess(
+        (v) => (v === "" ? undefined : v),
+        z.string().uuid().nullable().optional(),
+    ),
+    dueDate: z.preprocess(
+        (v) => (v === "" || v === undefined || v === null ? undefined : v),
+        z.coerce.date().nullable().optional(),
+    ),
 }).refine((v) => Object.values(v).some((x) => x !== undefined), {
-  message: "Nothing to update",
+    message: "Nothing to update",
 });
+
+export const createDiscussionSchema = z.object({
+    projectId: z.string().uuid(),
+    workspaceId: z.string().uuid(),
+    title: z.string(),
+    content: z.preprocess(
+        (v) => (v == "" || v == undefined || v == null ? undefined : v),
+        z.string().trim().min(10).max(2000)
+    ),
+    category: z.enum(["general",
+        "technical",
+        "proposal",
+        "announcement",
+        "question"
+    ]),
+    tags: z.string().array().default([])
+})
