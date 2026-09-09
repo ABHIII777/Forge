@@ -69,7 +69,7 @@ export default function GlobalDiscussionsPage() {
           })}
         </div>
       </div>
-    <CreateDiscussionModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}/>
+    {/* <CreateDiscussionModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} projectId="p01" workspaceId="w01"/> */}
     </AppShell>
   );
 }

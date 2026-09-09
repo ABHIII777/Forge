@@ -21,8 +21,6 @@ export default function GlobalIssuesPage() {
   const [selectedIssue, setSelectedIssue] = React.useState<string>("");
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
-  // const allIssues: Issue[] = [];
-
   React.useEffect(() => {
     fetch("/api/projects")
       .then((res) => (res.ok ? res.json() : { projects: [] }))
@@ -48,15 +46,11 @@ export default function GlobalIssuesPage() {
       .catch((err) => console.log(err))
   }, [selectedProjectId])
 
-  console.log(issues)
-
   const filteredIssues = issues.filter((issues) => {
     const matchesSearch = issues.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || issues.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  console.log(filteredIssues);
 
   return (
     <AppShell>

@@ -12,6 +12,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Discussion, Project, User } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
+import { CreateDiscussionModal } from "@/features/discussions/components/CreateDiscussionModal";
 
 const categoryColors: Record<string, string> = {
   technical: "info",
@@ -21,15 +22,64 @@ const categoryColors: Record<string, string> = {
   question: "secondary",
 };
 
+interface ProjectDetail {
+  project: Project;
+  discussions: Discussion[];
+  counts: { open: number; total: number; members: number };
+}
+
 export default function DiscussionsPage() {
   const params = useParams();
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  // TODO(api): load real project and discussions.
-  const project = undefined as Project | undefined;
   const discussions: Discussion[] = [];
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [project, setProject] = React.useState<Project | null>(null);
+  const [createModalOpen, setCreateModalOpen] = React.useState(false)
+  const [data, setData] = React.useState<ProjectDetail | null>(null)
+
+  const [categoryFilter, setCategoryFilter] = React.useState<string>("all")
+  const [tagsFilter, setTagsFilter] = React.useState<string>("all")
+  
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [notFound, setNotFound] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    setNotFound(false);
+    fetch(`/api/projects/${projectId}`)
+      .then((res) => {
+        if (res.status === 404) {
+          setNotFound(true);
+          return null;
+        }
+        if (!res.ok) throw new Error("Failed to load project");
+        return res.json();
+      })
+      .then((payload) => {
+        if (payload) setData(payload as ProjectDetail);
+      })
+      .catch((err) => {
+        console.log(err);
+        setNotFound(true);
+      })
+      .finally(() => setIsLoading(false));
+  }, [projectId]);
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    fetch(`/api/projects/${projectId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setProject((data?.project ?? null) as Project | null)
+      })
+      .catch((err) => {
+        console.log(err);
+        setProject(null)
+      })
+      .finally(() => setIsLoading(false));
+  }, [projectId])
 
   if (!project) {
     return (
@@ -56,7 +106,9 @@ export default function DiscussionsPage() {
             </div>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{project.name}</h1>
           </div>
-          <Button variant="primary" size="sm"><Plus className="h-4 w-4" /> New Discussion</Button>
+          <Button variant="primary" size="sm" onClick={() => setCreateModalOpen(true)}>
+            <Plus className="h-4 w-4" /> New Discussion
+          </Button>
         </div>
 
         <nav className="flex items-center gap-1 mb-8 overflow-x-auto pb-2" aria-label="Project navigation">
@@ -120,6 +172,7 @@ export default function DiscussionsPage() {
           )}
         </div>
       </div>
+      <CreateDiscussionModal workspaceId={workspaceId} projectId={projectId} onOpenChange={setCreateModalOpen} open={createModalOpen} />
     </AppShell>
   );
 }
