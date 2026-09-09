@@ -21,6 +21,7 @@ interface CreateDiscussionModalProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   workspaceId: string;
+  onCreated?: () => void;
 }
 
 type CreateDiscussionFormData = {
@@ -45,10 +46,12 @@ export function CreateDiscussionModal({
   open,
   onOpenChange,
   projectId,
-  workspaceId
+  workspaceId,
+  onCreated,
 }: CreateDiscussionModalProps) {
 
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [submitError, setSubmitError] = React.useState<string | null>(null)
   const [createdDiscussion, setCreatedDiscussion] = React.useState<{
     title: string,
     content: string,
@@ -75,29 +78,38 @@ export function CreateDiscussionModal({
 
   const handleNewDiscussion = async(e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitError(null)
 
-    const data = await fetch("/api/discussion", {
-      method: "POST",
-      headers: {
-        "Content-Type" : "application/json"
-      },
-      body: JSON.stringify({
-        projectId: projectId,
-        workspaceId: workspaceId,
-        title: formData.title,
-        content: formData.content,
-        category: formData.category,
-        tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+    let res: unknown = null;
+    try {
+      const data = await fetch("/api/discussion", {
+        method: "POST",
+        headers: {
+          "Content-Type" : "application/json"
+        },
+        body: JSON.stringify({
+          projectId: projectId,
+          workspaceId: workspaceId,
+          title: formData.title,
+          content: formData.content,
+          category: formData.category,
+          tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        })
       })
-    })
 
-    const res = await data.json()
+      res = await data.json().catch(() => null)
 
-    if (data.ok) {
-      console.log("Looks like everything is working fine")
-    } else {
-      console.log("Something went wrong")
-      console.log(res)
+      if (!data.ok) {
+        setSubmitError((res as { error?: string })?.error ?? "Something went wrong")
+        return;
+      }
+    } catch (err) {
+      console.error(err)
+      setSubmitError("Something went wrong")
+      return;
+    } finally {
+      setIsSubmitting(false)
     }
 
     const newCreatedDiscussion = {
@@ -110,8 +122,10 @@ export function CreateDiscussionModal({
     }
 
     setCreatedDiscussion(newCreatedDiscussion)
-    setIsSubmitting(false)
+    resetFormData()
     onOpenChange(false)
+    onCreated?.()
+    router.refresh()
   }
 
   return (
@@ -167,15 +181,21 @@ export function CreateDiscussionModal({
             </p>
           </div>
           <DialogFooter>
+            <div className="flex-1">
+              {submitError && (
+                <p className="text-sm text-[var(--color-status-error)] text-left">{submitError}</p>
+              )}
+            </div>
             <Button
               type="button"
               variant="secondary"
               onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary">
-              Start Discussion
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
+              {isSubmitting ? "Starting…" : "Start Discussion"}
             </Button>
           </DialogFooter>
         </form>

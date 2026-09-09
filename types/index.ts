@@ -115,10 +115,12 @@ export interface Discussion {
   viewsCount: number;
   isPinned: boolean;
   isLocked: boolean;
-  lastActivityAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  tags: string[];
+  // Not a DB column (db/schema.ts has createdAt/updatedAt only);
+  // present on some legacy payloads, otherwise fall back to updatedAt.
+  lastActivityAt?: Date | string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  tags: string[] | null;
 }
 
 export interface DiscussionReply {

@@ -33,22 +33,31 @@ export default function DiscussionsPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  const discussions: Discussion[] = [];
+
+  // const discussions: Discussion[] = [];
+  // const [data, setData] = React.useState<ProjectDetail | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("");
   const [project, setProject] = React.useState<Project | null>(null);
+  const [discussions, setDiscussions] = React.useState<Discussion[]>([]);
   const [createModalOpen, setCreateModalOpen] = React.useState(false)
-  const [data, setData] = React.useState<ProjectDetail | null>(null)
 
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all")
   const [tagsFilter, setTagsFilter] = React.useState<string>("all")
   
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
   const [notFound, setNotFound] = React.useState(false)
+  const [discussionsVersion, setDiscussionsVersion] = React.useState(0)
 
   React.useEffect(() => {
+    if (!projectId) {
+      setNotFound(true);
+      setIsLoading(false);
+      return;
+    }
+    const controller = new AbortController();
     setIsLoading(true);
     setNotFound(false);
-    fetch(`/api/projects/${projectId}`)
+    fetch(`/api/projects/${projectId}`, { signal: controller.signal })
       .then((res) => {
         if (res.status === 404) {
           setNotFound(true);
@@ -57,43 +66,73 @@ export default function DiscussionsPage() {
         if (!res.ok) throw new Error("Failed to load project");
         return res.json();
       })
-      .then((payload) => {
-        if (payload) setData(payload as ProjectDetail);
-      })
-      .catch((err) => {
-        console.log(err);
-        setNotFound(true);
-      })
-      .finally(() => setIsLoading(false));
-  }, [projectId]);
-
-  React.useEffect(() => {
-    setIsLoading(true);
-    fetch(`/api/projects/${projectId}`)
-      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        setProject((data?.project ?? null) as Project | null)
+        if (data) {
+          setProject((data?.project ?? null) as Project | null)
+          if (!data?.project) setNotFound(true);
+        }
       })
       .catch((err) => {
-        console.log(err);
+        if (err?.name === "AbortError") return;
+        console.error(err);
         setProject(null)
+        setNotFound(true)
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+    return () => controller.abort();
   }, [projectId])
 
-  if (!project) {
+  React.useEffect(() => {
+    if (!projectId) return;
+    const controller = new AbortController();
+    const query = new URLSearchParams({ projectId });
+    if (workspaceId) query.set("workspaceId", workspaceId);
+    fetch(`/api/discussion?${query.toString()}`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const rows = (data?.discussions ?? []) as Discussion[]
+        setDiscussions(rows)
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        console.log(err)
+      })
+    return () => controller.abort();
+  }, [projectId, workspaceId, discussionsVersion])
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-sm text-[var(--color-text-muted)]">Loading project…</p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (notFound || !project) {
     return (
       <AppShell>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">Project not found</h2>
+            <Link
+              href={`/workspaces/${workspaceId}/projects`}
+              className="text-sm text-[var(--color-accent-primary)] hover:underline mt-2 inline-block"
+            >
+              Back to projects
+            </Link>
           </div>
         </div>
       </AppShell>
     );
   }
 
-  const filteredDiscussions = discussions.filter((d) => d.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredDiscussions = discussions.filter((d) =>
+    (d.title ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <AppShell>
@@ -134,8 +173,17 @@ export default function DiscussionsPage() {
         <div className="space-y-3">
           {filteredDiscussions.map((discussion) => {
             const author = null as User | null;
+            const tags = discussion.tags ?? [];
+            const lastActivity =
+              (discussion as unknown as { lastActivityAt?: Date | string }).lastActivityAt ??
+              discussion.updatedAt;
             return (
-              <Card key={discussion.id} variant="hover" className="p-4 cursor-pointer">
+              <Link
+                key={discussion.id}
+                href={`/workspaces/${workspaceId}/projects/${projectId}/discussions/${discussion.id}`}
+                className="block"
+              >
+              <Card variant="hover" className="p-4 cursor-pointer">
                 <div className="flex items-start gap-4">
                   <Avatar name={author?.displayName} size="md" />
                   <div className="flex-1 min-w-0">
@@ -149,11 +197,11 @@ export default function DiscussionsPage() {
                       <Badge variant={categoryColors[discussion.category] as "info" | "warning" | "default" | "success" | "secondary"} size="sm">{discussion.category}</Badge>
                       <span className="flex items-center gap-1"><MessageCircle className="h-3 w-3" />{discussion.repliesCount} replies</span>
                       <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{discussion.viewsCount} views</span>
-                      <span className="font-mono">{formatRelativeTime(discussion.lastActivityAt)}</span>
+                      <span className="font-mono">{formatRelativeTime(lastActivity)}</span>
                     </div>
-                    {discussion.tags.length > 0 && (
+                    {tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {discussion.tags.map((tag) => (
+                        {tags.map((tag) => (
                           <span key={tag} className="px-1.5 py-0.5 text-[10px] font-mono bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] rounded-[var(--radius-sm)] border border-[var(--color-border-primary)]">{tag}</span>
                         ))}
                       </div>
@@ -161,6 +209,7 @@ export default function DiscussionsPage() {
                   </div>
                 </div>
               </Card>
+              </Link>
             );
           })}
           {filteredDiscussions.length === 0 && (
@@ -172,7 +221,7 @@ export default function DiscussionsPage() {
           )}
         </div>
       </div>
-      <CreateDiscussionModal workspaceId={workspaceId} projectId={projectId} onOpenChange={setCreateModalOpen} open={createModalOpen} />
+      <CreateDiscussionModal workspaceId={workspaceId} projectId={projectId} onOpenChange={setCreateModalOpen} open={createModalOpen} onCreated={() => setDiscussionsVersion((v) => v + 1)} />
     </AppShell>
   );
 }
