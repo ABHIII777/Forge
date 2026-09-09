@@ -105,8 +105,6 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
     e.preventDefault();
     setIsSubmitting(true);
 
-    console.log(formData)
-
     const data = await fetch("/api/issues", {
       method: "POST",
       headers: {

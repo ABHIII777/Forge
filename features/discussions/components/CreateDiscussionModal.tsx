@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react"
 import {
   Dialog,
   DialogContent,
@@ -11,21 +12,108 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { DiscussionCategory } from "@/types";
+import { useRouter } from "next/navigation";
+import { workspace } from "@/db/schema";
 
-// Frontend design only: no state, no routing, no backend calls.
-// Fields mirror the user-settable columns of the `discussion` table in db/schema.ts.
-// Auto/backend-owned columns are intentionally absent:
-// id, projectId/workspaceId (page context), authorId,
-// repliesCount, viewsCount, isPinned, isLocked, createdAt, updatedAt.
 interface CreateDiscussionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  projectId: string;
+  workspaceId: string;
 }
+
+type CreateDiscussionFormData = {
+  title: string;
+  content: string;
+  category: DiscussionCategory;
+  tags: string;
+  projectId: string;
+  workspaceId: string;
+}
+
+const initialFormData = () : CreateDiscussionFormData => ({
+  title: "",
+  content: "",
+  category: "general",
+  tags: "",
+  projectId: "",
+  workspaceId: "",
+})
 
 export function CreateDiscussionModal({
   open,
   onOpenChange,
+  projectId,
+  workspaceId
 }: CreateDiscussionModalProps) {
+
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [createdDiscussion, setCreatedDiscussion] = React.useState<{
+    title: string,
+    content: string,
+    category: DiscussionCategory,
+    tags: string,
+    projectId: string,
+    workspaceId: string
+  } | null>(null)
+  const [formData, setFormData] = React.useState<CreateDiscussionFormData>(() => initialFormData())
+  const router = useRouter();
+
+  const updateField = <K extends keyof CreateDiscussionFormData>(
+    field: K,
+    value: CreateDiscussionFormData[K]
+  ) => {
+    setFormData((prev) => ({
+      ...prev, [field] : value
+    }))
+  }
+
+  const resetFormData = () => {
+    setFormData(initialFormData())
+  }
+
+  const handleNewDiscussion = async(e: React.FormEvent) => {
+    e.preventDefault()
+
+    const data = await fetch("/api/discussion", {
+      method: "POST",
+      headers: {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify({
+        projectId: projectId,
+        workspaceId: workspaceId,
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
+        tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+      })
+    })
+
+    const res = await data.json()
+
+    if (data.ok) {
+      console.log("Looks like everything is working fine")
+    } else {
+      console.log("Something went wrong")
+      console.log(res)
+    }
+
+    const newCreatedDiscussion = {
+      title: formData.title,
+      content: formData.content,
+      category: formData.category,
+      tags: formData.tags,
+      projectId: projectId,
+      workspaceId: workspaceId
+    }
+
+    setCreatedDiscussion(newCreatedDiscussion)
+    setIsSubmitting(false)
+    onOpenChange(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg">
@@ -35,19 +123,21 @@ export function CreateDiscussionModal({
             Discussions are conversations within projects. Fill in the details below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+        <form onSubmit={handleNewDiscussion} className="space-y-4">
           <Input
             label="Title"
             name="title"
             placeholder="Give your discussion a clear title"
-            defaultValue=""
+            value={formData.title}
+            onChange={(e) => updateField("title", e.target.value)}
             required
           />
           <Textarea
             label="Content"
             name="content"
             placeholder="Share context, questions, or proposals with your team..."
-            defaultValue=""
+            value={formData.content}
+            onChange={(e) => updateField("content", e.target.value)}
             rows={4}
             required
           />
@@ -55,7 +145,7 @@ export function CreateDiscussionModal({
             <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">
               Category
             </label>
-            <select name="category" defaultValue="general" className="input-base">
+            <select name="category" className="input-base" value={formData.category} onChange={(e) => updateField("category", e.target.value as DiscussionCategory)}>
               <option value="general">General</option>
               <option value="technical">Technical</option>
               <option value="proposal">Proposal</option>
@@ -68,7 +158,9 @@ export function CreateDiscussionModal({
               label="Tags"
               name="tags"
               placeholder="comma, separated, tags"
-              defaultValue=""
+              value={formData.tags}
+              onChange={(e) => updateField("tags", e.target.value)}
+              required
             />
             <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
               Separate tags with commas. Optional.

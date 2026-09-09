@@ -5,7 +5,6 @@ import { issue, issueLabel, label, project, user } from "@/db/schema"
 import { createIssueSchema } from "@/lib/validators";
 import { and, desc, eq, inArray } from "drizzle-orm"
 
-// TODO(auth): scope to issues of projects the signed-in user can access.
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get("projectId");
