@@ -34,8 +34,6 @@ export default function DiscussionsPage() {
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
 
-  // const discussions: Discussion[] = [];
-  // const [data, setData] = React.useState<ProjectDetail | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("");
   const [project, setProject] = React.useState<Project | null>(null);
   const [discussions, setDiscussions] = React.useState<Discussion[]>([]);
