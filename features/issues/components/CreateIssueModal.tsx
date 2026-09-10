@@ -13,6 +13,8 @@ interface CreateIssueModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
+  workspaceId?: string;
+  onCreated?: () => void;
 }
 
 type CreateIssueFormData = {
@@ -31,12 +33,17 @@ const initialFormData = () : CreateIssueFormData => ({
   projectId: "",
 })
 
-export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueModalProps) {
+export function CreateIssueModal({ open, onOpenChange, projectId, workspaceId, onCreated }: CreateIssueModalProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [labels, setLabels] = React.useState<Label[]>([]);
   const [selectedLabelIds, setSelectedLabelIds] = React.useState<string[]>([]);
   const [newLabelName, setNewLabelName] = React.useState("");
   const [newLabelColor, setNewLabelColor] = React.useState("#6366f1");
+  const [projectMembers, setProjectMembers] = React.useState<
+    { userId: string; displayName: string; username: string; role: string }[]
+  >([]);
+  const [reporterName, setReporterName] = React.useState<string | null>(null);
   const [createdIssue, setCreatedIssue] = React.useState<{
     id: string,
     title: string,
@@ -71,6 +78,28 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
       .then((res) => (res.ok ? res.json() : { labels: [] }))
       .then((data) => setLabels((data.labels ?? []) as Label[]))
       .catch((err) => console.log(err));
+    fetch(`/api/projects/${projectId}/members`)
+      .then((res) => (res.ok ? res.json() : { members: [] }))
+      .then((data) =>
+        setProjectMembers(
+          ((data.members ?? []) as {
+            userId: string;
+            displayName: string;
+            username: string;
+            role: string;
+          }[]),
+        ),
+      )
+      .catch((err) => console.log(err));
+    // TODO(auth): reporter will be the signed-in user; until then the API
+    // attributes to the first user, so show who that is.
+    fetch("/api/users")
+      .then((res) => (res.ok ? res.json() : { users: [] }))
+      .then((data) => {
+        const rows = (data.users ?? []) as User[];
+        setReporterName(rows[0]?.displayName ?? null);
+      })
+      .catch((err) => console.log(err));
   }, [open, projectId]);
 
   const toggleLabel = (id: string) => {
@@ -104,6 +133,7 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
     const data = await fetch("/api/issues", {
       method: "POST",
@@ -122,15 +152,14 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
 
     const res = await data.json()
 
-    if (data.ok) {
-      console.log("Looks like everything worked fine", res)
-    } else {
-      console.log("Something went wrong")
-      console.error(res)
+    if (!data.ok) {
+      setSubmitError(typeof res?.error === "string" ? res.error : "Something went wrong");
+      setIsSubmitting(false);
+      return;
     }
 
     const newCreatedIssue = {
-      id: `iss_${Date.now()}`,
+      id: (res.issue as { id: string }).id,
       projectId: projectId,
       title: formData.title,
       description: formData.description,
@@ -141,10 +170,10 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
     setCreatedIssue(newCreatedIssue);
 
     setIsSubmitting(false);
-    onOpenChange(false);
   };
 
   const handleCreateAnotherIssue = () => {
+    onCreated?.()
     resetIssueForm()
   }
 
@@ -157,7 +186,12 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
   const handleViewIssue = () => {
     if (createdIssue) {
       onOpenChange(false)
-      router.push(`/issues/${createdIssue.projectId}/projects/${createdIssue.id}`)
+      onCreated?.()
+      if (workspaceId) {
+        router.push(`/workspaces/${workspaceId}/projects/${createdIssue.projectId}/issues/${createdIssue.id}`)
+      } else {
+        router.refresh()
+      }
     }
   }
 
@@ -221,8 +255,20 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
               <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5">Assignee</label>
               <select value={formData.assigneeId} onChange={(e) => updateField("assigneeId", e.target.value)} className="input-base">
                 <option value="">Unassigned</option>
-                <option value="" disabled>No members yet</option>
+                {projectMembers.map((m) => (
+                  <option key={m.userId} value={m.userId}>
+                    {m.displayName} (@{m.username}) — {m.role}
+                  </option>
+                ))}
+                {projectMembers.length === 0 && (
+                  <option value="" disabled>No project members yet</option>
+                )}
               </select>
+              {reporterName && (
+                <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">
+                  Reporting as {reporterName}
+                </p>
+              )}
             </div>
           </div>
           <div>
@@ -270,7 +316,12 @@ export function CreateIssueModal({ open, onOpenChange, projectId }: CreateIssueM
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <div className="flex-1">
+              {submitError && (
+                <p className="text-sm text-[var(--color-status-error)] text-left">{submitError}</p>
+              )}
+            </div>
+            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancel</Button>
             <Button type="submit" variant="primary" loading={isSubmitting}>Create Issue</Button>
           </DialogFooter>
         </form>

@@ -21,6 +21,17 @@ const roleColors: Record<string, "primary" | "secondary" | "default" | "info"> =
   viewer: "info",
 };
 
+interface WorkspaceMemberRow {
+  userId: string;
+  displayName: string;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+  isOnline: boolean;
+  role: "owner" | "admin" | "member" | "viewer";
+  joinedAt: string;
+}
+
 export default function TeamPage() {
   const params = useParams();
   const pathname = usePathname();
@@ -29,15 +40,104 @@ export default function TeamPage() {
   const [inviteEmail, setInviteEmail] = React.useState("");
   const [inviteRole, setInviteRole] = React.useState("member");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [inviteError, setInviteError] = React.useState<string | null>(null);
+
+  const [members, setMembers] = React.useState<WorkspaceMemberRow[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+
+  const loadMembers = React.useCallback(async (signal?: AbortSignal) => {
+    if (!workspaceId) return;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members`, { signal });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setLoadError((data as { error?: string })?.error ?? "Failed to load members");
+        setMembers([]);
+        return;
+      }
+      setMembers(((data as { members?: WorkspaceMemberRow[] })?.members ?? []));
+    } catch (err) {
+      if ((err as { name?: string })?.name === "AbortError") return;
+      console.error(err);
+      setLoadError("Failed to load members");
+    } finally {
+      if (!signal?.aborted) setIsLoading(false);
+    }
+  }, [workspaceId]);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    loadMembers(controller.signal);
+    return () => controller.abort();
+  }, [loadMembers]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setInviteModalOpen(false);
-    setInviteEmail("");
-    setInviteRole("member");
+    setInviteError(null);
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setInviteError((data as { error?: string })?.error ?? "Failed to invite member");
+        return;
+      }
+      setInviteModalOpen(false);
+      setInviteEmail("");
+      setInviteRole("member");
+      loadMembers();
+    } catch (err) {
+      console.error(err);
+      setInviteError("Failed to invite member");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, role: string) => {
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setLoadError((data as { error?: string })?.error ?? "Failed to update role");
+        return;
+      }
+      setMembers((prev) =>
+        prev.map((m) => (m.userId === userId ? { ...m, role: role as WorkspaceMemberRow["role"] } : m)),
+      );
+    } catch (err) {
+      console.error(err);
+      setLoadError("Failed to update role");
+    }
+  };
+
+  const handleRemove = async (userId: string, displayName: string) => {
+    if (!confirm(`Remove ${displayName} from this workspace?`)) return;
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/members/${userId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setLoadError((data as { error?: string })?.error ?? "Failed to remove member");
+        return;
+      }
+      setMembers((prev) => prev.filter((m) => m.userId !== userId));
+    } catch (err) {
+      console.error(err);
+      setLoadError("Failed to remove member");
+    }
   };
 
   return (
@@ -48,7 +148,7 @@ export default function TeamPage() {
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Team</h1>
             <p className="text-[var(--color-text-secondary)] mt-1">Manage your workspace members</p>
           </div>
-          <Button variant="primary" size="sm" onClick={() => setInviteModalOpen(true)}><Plus className="h-4 w-4" /> Invite Member</Button>
+          <Button variant="primary" size="sm" onClick={() => { setInviteError(null); setInviteModalOpen(true); }}><Plus className="h-4 w-4" /> Invite Member</Button>
         </div>
 
         <nav className="flex items-center gap-1 mb-8 overflow-x-auto pb-2" aria-label="Workspace navigation">
@@ -64,6 +164,10 @@ export default function TeamPage() {
           })}
         </nav>
 
+        {loadError && (
+          <p className="text-sm text-[var(--color-status-error)] mb-4">{loadError}</p>
+        )}
+
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -77,11 +181,66 @@ export default function TeamPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-[var(--color-text-muted)]">
-                    No members yet
-                  </td>
-                </tr>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-[var(--color-text-muted)]">
+                      Loading members…
+                    </td>
+                  </tr>
+                ) : members.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-[var(--color-text-muted)]">
+                      No members yet
+                    </td>
+                  </tr>
+                ) : (
+                  members.map((m) => (
+                    <tr key={m.userId} className="border-b border-[var(--color-border-primary)] last:border-0">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={m.displayName} size="sm" />
+                          <div>
+                            <p className="font-medium text-[var(--color-text-primary)]">{m.displayName}</p>
+                            <p className="text-xs text-[var(--color-text-muted)] font-mono">@{m.username} · {m.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={roleColors[m.role] ?? "default"} size="sm">{m.role}</Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-2 text-[var(--color-text-secondary)]">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: m.isOnline ? "var(--color-status-success)" : "var(--color-text-muted)" }}
+                          />
+                          {m.isOnline ? "Online" : "Offline"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[var(--color-text-muted)] font-mono text-xs">
+                        {formatDate(m.joinedAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <select
+                            value={m.role}
+                            onChange={(e) => handleRoleChange(m.userId, e.target.value)}
+                            className="input-base !w-auto text-xs"
+                            aria-label={`Change role for ${m.displayName}`}
+                          >
+                            <option value="viewer">Viewer</option>
+                            <option value="member">Member</option>
+                            <option value="admin">Admin</option>
+                            <option value="owner">Owner</option>
+                          </select>
+                          <Button variant="secondary" size="sm" onClick={() => handleRemove(m.userId, m.displayName)}>
+                            Remove
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -103,8 +262,11 @@ export default function TeamPage() {
                   <option value="admin">Admin - Full workspace access</option>
                 </select>
               </div>
+              {inviteError && (
+                <p className="text-sm text-[var(--color-status-error)]">{inviteError}</p>
+              )}
               <DialogFooter>
-                <Button type="button" variant="secondary" onClick={() => setInviteModalOpen(false)}>Cancel</Button>
+                <Button type="button" variant="secondary" onClick={() => setInviteModalOpen(false)} disabled={isSubmitting}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={isSubmitting}>Send Invitation</Button>
               </DialogFooter>
             </form>

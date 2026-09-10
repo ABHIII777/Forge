@@ -20,6 +20,13 @@ const columns: { status: IssueStatus; label: string; color: string }[] = [
   { status: "done", label: "DONE", color: "var(--color-status-success)" },
 ];
 
+const roleBadgeVariant: Record<string, "primary" | "secondary" | "default" | "info"> = {
+  owner: "primary",
+  admin: "secondary",
+  member: "default",
+  viewer: "info",
+};
+
 export default function BoardPage() {
   const params = useParams();
   const pathname = usePathname();
@@ -32,6 +39,7 @@ export default function BoardPage() {
   const [notFound, setNotFound] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(true)
   const [createModalOpen, setCreateModalOpen] = React.useState(false)
+  const [issuesVersion, setIssuesVersion] = React.useState(0)
 
   React.useEffect(() => {
     if (!projectId) {
@@ -71,7 +79,7 @@ export default function BoardPage() {
         if (!controller.signal.aborted) setIsLoading(false)
       })
     return () => controller.abort();
-  }, [projectId])
+  }, [projectId, issuesVersion])
 
   React.useEffect(() => {
     const controller = new AbortController();
@@ -157,6 +165,7 @@ export default function BoardPage() {
                 <div className="flex-1 space-y-3 min-h-[100px] p-2 bg-[var(--color-bg-secondary)] border-2 border-[var(--color-border-primary)] rounded-[var(--radius-lg)]">
                   {colIssues.map((issue) => {
                     const assignee = (issue.assigneeId ? usersById[issue.assigneeId] : undefined) ?? null;
+                    const reporter = usersById[issue.reporterId] ?? null;
                     const labels = issue.labels ?? [];
                     return (
                       <Link
@@ -177,12 +186,26 @@ export default function BoardPage() {
                               ))}
                             </div>
                           )}
+                          <div className="flex items-center gap-2 mt-2">
+                            {assignee ? (
+                              <>
+                                <Avatar name={assignee.displayName} size="xs" />
+                                <span className="text-xs text-[var(--color-text-primary)] truncate">{assignee.displayName}</span>
+                                <Badge variant={roleBadgeVariant[assignee.role] ?? "default"} size="sm">{assignee.role}</Badge>
+                              </>
+                            ) : (
+                              <span className="text-xs text-[var(--color-text-muted)]">Unassigned</span>
+                            )}
+                          </div>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
                               {issue.commentsCount > 0 && <span className="flex items-center gap-1 text-xs"><MessageCircle className="h-3 w-3" />{issue.commentsCount}</span>}
                               {issue.attachmentsCount > 0 && <span className="flex items-center gap-1 text-xs"><Paperclip className="h-3 w-3" />{issue.attachmentsCount}</span>}
+                              <span className="text-[11px]">Reported by {reporter?.displayName ?? "Unknown"}</span>
+                              {reporter && (
+                                <Badge variant={roleBadgeVariant[reporter.role] ?? "default"} size="sm">{reporter.role}</Badge>
+                              )}
                             </div>
-                            {assignee && <Avatar name={assignee.displayName} size="xs" />}
                           </div>
                         </Card>
                       </Link>
@@ -201,6 +224,8 @@ export default function BoardPage() {
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
         projectId={projectId}
+        workspaceId={workspaceId}
+        onCreated={() => setIssuesVersion((v) => v + 1)}
       />
     </AppShell>
   );

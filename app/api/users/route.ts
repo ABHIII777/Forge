@@ -10,6 +10,10 @@ export async function GET() {
         id: user.id,
         displayName: user.displayName,
         username: user.username,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        isOnline: user.isOnline,
       })
       .from(user);
 
