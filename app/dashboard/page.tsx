@@ -21,7 +21,8 @@ import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
 import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
 import { formatRelativeTime, getInitials } from "@/lib/utils";
-import type { ActivityEvent, Issue, Project, User } from "@/types";
+import type { Issue, Project, User } from "@/types";
+import { useActivity } from "@/hooks/useActivity";
 
 import { useEffect, useState } from "react";
 
@@ -46,10 +47,10 @@ export default function DashboardPage() {
   const recentProjects: Project[] = [];
   const recentIssues: Issue[] = [];
   const onlineUsers: User[] = [];
-  const recentActivities: ActivityEvent[] = [];
+  const { items: recentActivities } = useActivity({ limit: 8 });
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   
-  const [user, setUser] = useState<any[]>([]);
+  const [user, setUser] = useState<{ displayName?: string }[]>([]);
 
   useEffect(() => {
     fetch("/api/dashboard").then((res) => 
@@ -158,9 +159,10 @@ export default function DashboardPage() {
                 {recentActivities.map((activity) => {
                   return (
                     <div key={activity.id} className="flex items-start gap-3 p-4">
-                      <Avatar size="sm" />
+                      <Avatar name={activity.user?.displayName} size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-[var(--color-text-primary)]">
+                          <span className="font-medium">{activity.user?.displayName ?? "Someone"}</span>{" "}
                           {activity.description}
                         </p>
                         <p className="text-xs text-[var(--color-text-muted)] font-mono mt-1">

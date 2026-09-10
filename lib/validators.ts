@@ -119,3 +119,28 @@ export const inviteMemberSchema = z.object({
 export const updateMemberRoleSchema = z.object({
     role: z.enum(["owner", "admin", "member", "viewer"]),
 })
+
+export const activityTypeEnum = z.enum([
+    "issue.created", "issue.updated", "issue.status_changed", "issue.assigned",
+    "issue.commented", "project.created", "project.updated",
+    "discussion.created", "discussion.replied",
+    "workspace.member_added", "workspace.member_removed",
+    "system"
+])
+
+export const createActivitySchema = z.object({
+    workspaceId: z.string().uuid(),
+    projectId: z.string().uuid().nullable().optional(),
+    type: activityTypeEnum,
+    description: z.string().trim().min(3).max(500),
+    metadata: z.record(z.string(), z.unknown()).default({})
+})
+
+export const listActivitySchema = z.object({
+    workspaceId: z.string().uuid().optional(),
+    projectId: z.string().uuid().optional(),
+    userId: z.string().uuid().optional(),
+    type: activityTypeEnum.optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    cursor: z.string().uuid().optional()
+})

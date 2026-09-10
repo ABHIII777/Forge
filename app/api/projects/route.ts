@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createProjectSchema } from "@/lib/validators";
+import { logActivity } from "@/lib/activity";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { project, user, workspace } from "@/db/schema";
@@ -31,6 +32,20 @@ export async function POST(req: Request) {
             name, description: description ?? null, key, workspaceId,
             ownerId: parsed.data.ownerId ?? owner.id, status,
         }).returning();
+
+        try {
+            await logActivity(db, {
+                workspaceId,
+                projectId: created.id,
+                userId: created.ownerId,
+                type: "project.created",
+                description: `created project ${created.name}`,
+                metadata: { projectId: created.id, key: created.key },
+            });
+        } catch (err) {
+            console.error("Failed to log activity for project creation", err);
+        }
+
         return NextResponse.json({ project: created }, { status: 201 });
     } catch (e) {
         if (pgErrorCode(e) === "23505") {

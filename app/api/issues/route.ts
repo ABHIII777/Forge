@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { issue, issueLabel, label, project, user } from "@/db/schema"
 import { createIssueSchema } from "@/lib/validators";
+import { logActivity } from "@/lib/activity";
 import { and, desc, eq, inArray } from "drizzle-orm"
 
 export async function GET(req: Request) {
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     const { projectId, title, description, assigneeId, priority, labelIds } = parsed.data
-    const [proj] = await db.select({ id: project.id }).from(project).where(eq(project.id, projectId)).limit(1)
+    const [proj] = await db.select({ id: project.id, workspaceId: project.workspaceId, key: project.key }).from(project).where(eq(project.id, projectId)).limit(1)
     
     if (!proj) {
         return NextResponse.json({ error: "Project does not exist" }, { status: 404 })
@@ -76,6 +77,15 @@ export async function POST(req: Request) {
                 }
                 await tx.insert(issueLabel).values(labelIds.map((labelId) => ({ issueId: row.id, labelId })));
             }
+
+            await logActivity(tx, {
+                workspaceId: proj.workspaceId,
+                projectId,
+                userId: reporter.id,
+                type: "issue.created",
+                description: `created issue ${proj.key}-${row.number}: ${title}`,
+                metadata: { issueId: row.id, number: row.number, title, assigneeId: assigneeId ?? null },
+            });
 
             return { issue: row, labels };
         })

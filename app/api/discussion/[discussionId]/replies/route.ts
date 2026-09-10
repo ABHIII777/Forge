@@ -3,6 +3,7 @@ import z from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { discussion, discussionReply, user } from "@/db/schema";
+import { logActivity } from "@/lib/activity";
 
 const replySchema = z.object({
     content: z.string().trim().min(1).max(5000),
@@ -53,6 +54,19 @@ export async function POST(
                 content: parsed.data.content,
             })
             .returning();
+
+        try {
+            await logActivity(db, {
+                workspaceId: row.workspaceId,
+                projectId: row.projectId,
+                userId: author.id,
+                type: "discussion.replied",
+                description: `replied to discussion "${row.title}"`,
+                metadata: { discussionId: row.id, replyId: created.id },
+            });
+        } catch (err) {
+            console.error("Failed to log activity for discussion reply", err);
+        }
 
         return NextResponse.json({ reply: created }, { status: 201 });
     } catch (err) {
