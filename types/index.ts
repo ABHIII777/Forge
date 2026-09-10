@@ -133,22 +133,6 @@ export interface DiscussionReply {
   isEdited: boolean;
 }
 
-export interface FileItem {
-  id: string;
-  projectId: string | null;
-  workspaceId: string;
-  name: string;
-  path: string;
-  type: "file" | "folder";
-  mimeType: string | null;
-  size: number;
-  uploadedById: string;
-  version: number;
-  parentId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface Notification {
   id: string;
   userId: string;

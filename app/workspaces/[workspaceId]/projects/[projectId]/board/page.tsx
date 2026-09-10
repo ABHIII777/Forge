@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { Plus, MessageCircle, Paperclip, Clock } from "lucide-react";
+import { Plus, MessageCircle, Paperclip } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { AppShell } from "@/components/layout/AppShell";
 import type { Issue, IssueStatus, Project, User } from "@/types";
 import { projectNav } from "@/lib/constants/navigation";
+import { CreateIssueModal } from "@/features/issues/components/CreateIssueModal";
 
 const columns: { status: IssueStatus; label: string; color: string }[] = [
   { status: "backlog", label: "BACKLOG", color: "var(--color-text-muted)" },
@@ -24,13 +25,13 @@ export default function BoardPage() {
   const pathname = usePathname();
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
-  // TODO(api): load real project and issues.
-  // const project = undefined as Project | undefined;
-  const issues: Issue[] = [];
 
   const [project, setProject] = React.useState<Project | null>(null)
+  const [issues, setIssues] = React.useState<Issue[]>([])
+  const [usersById, setUsersById] = React.useState<Record<string, User>>({})
   const [notFound, setNotFound] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(true)
+  const [createModalOpen, setCreateModalOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (!projectId) {
@@ -42,7 +43,7 @@ export default function BoardPage() {
     const controller = new AbortController();
     setIsLoading(true)
     setNotFound(false)
-  
+
     fetch(`/api/projects/${projectId}`, { signal: controller.signal})
       .then((res) => {
         if (res.status === 404) {
@@ -56,6 +57,7 @@ export default function BoardPage() {
       .then((data) => {
         if (data) {
           setProject((data?.project ?? null) as Project | null)
+          setIssues(((data?.issues ?? []) as Issue[]))
           if (!data?.project) setNotFound(true)
         }
       })
@@ -71,13 +73,44 @@ export default function BoardPage() {
     return () => controller.abort();
   }, [projectId])
 
-  if (!project || notFound) {
+  React.useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/users", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : { users: [] }))
+      .then((data) => {
+        const rows = (data.users ?? []) as User[];
+        setUsersById(Object.fromEntries(rows.map((u) => [u.id, u])));
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        console.error(err);
+      });
+    return () => controller.abort();
+  }, [])
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-sm text-[var(--color-text-muted)]">Loading board…</p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (notFound || !project) {
     return (
       <AppShell>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">Project not found</h2>
             <p className="text-[var(--color-text-secondary)] mt-2">The project you are looking for does not exist.</p>
+            <Link
+              href={`/workspaces/${workspaceId}/projects`}
+              className="text-sm text-[var(--color-accent-primary)] hover:underline mt-2 inline-block"
+            >
+              Back to projects
+            </Link>
           </div>
         </div>
       </AppShell>
@@ -95,7 +128,7 @@ export default function BoardPage() {
             </div>
             <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{project.name}</h1>
           </div>
-          <Button variant="primary" size="sm"><Plus className="h-4 w-4" /> New Issue</Button>
+          <Button variant="primary" size="sm" onClick={() => setCreateModalOpen(true)}><Plus className="h-4 w-4" /> New Issue</Button>
         </div>
 
         <nav className="flex items-center gap-1 mb-8 overflow-x-auto pb-2" aria-label="Project navigation">
@@ -123,37 +156,52 @@ export default function BoardPage() {
                 </div>
                 <div className="flex-1 space-y-3 min-h-[100px] p-2 bg-[var(--color-bg-secondary)] border-2 border-[var(--color-border-primary)] rounded-[var(--radius-lg)]">
                   {colIssues.map((issue) => {
-                    const assignee = null as User | null;
+                    const assignee = (issue.assigneeId ? usersById[issue.assigneeId] : undefined) ?? null;
+                    const labels = issue.labels ?? [];
                     return (
-                      <Card key={issue.id} className="p-3 cursor-pointer hover:border-[var(--color-border-secondary)] transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs font-mono text-[var(--color-text-muted)]">#{issue.number}</span>
-                          <Badge variant={issue.priority === "critical" ? "error" : issue.priority === "high" ? "warning" : "default"} size="sm">{issue.priority}</Badge>
-                        </div>
-                        <p className="text-sm text-[var(--color-text-primary)] font-medium mb-2 line-clamp-2">{issue.title}</p>
-                        {issue.labels.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {issue.labels.map((label) => (
-                              <span key={label.id} className="px-1.5 py-0.5 text-[10px] font-mono rounded-[var(--radius-sm)] border" style={{ backgroundColor: `${label.color}20`, color: label.color, borderColor: `${label.color}40` }}>{label.name}</span>
-                            ))}
+                      <Link
+                        key={issue.id}
+                        href={`/workspaces/${workspaceId}/projects/${projectId}/issues/${issue.id}`}
+                        className="block"
+                      >
+                        <Card className="p-3 cursor-pointer hover:border-[var(--color-border-secondary)] transition-colors">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-mono text-[var(--color-text-muted)]">#{issue.number}</span>
+                            <Badge variant={issue.priority === "critical" ? "error" : issue.priority === "high" ? "warning" : "default"} size="sm">{issue.priority}</Badge>
                           </div>
-                        )}
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
-                            {issue.commentsCount > 0 && <span className="flex items-center gap-1 text-xs"><MessageCircle className="h-3 w-3" />{issue.commentsCount}</span>}
-                            {issue.attachmentsCount > 0 && <span className="flex items-center gap-1 text-xs"><Paperclip className="h-3 w-3" />{issue.attachmentsCount}</span>}
+                          <p className="text-sm text-[var(--color-text-primary)] font-medium mb-2 line-clamp-2">{issue.title}</p>
+                          {labels.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {labels.map((label) => (
+                                <span key={label.id} className="px-1.5 py-0.5 text-[10px] font-mono rounded-[var(--radius-sm)] border" style={{ backgroundColor: `${label.color}20`, color: label.color, borderColor: `${label.color}40` }}>{label.name}</span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
+                              {issue.commentsCount > 0 && <span className="flex items-center gap-1 text-xs"><MessageCircle className="h-3 w-3" />{issue.commentsCount}</span>}
+                              {issue.attachmentsCount > 0 && <span className="flex items-center gap-1 text-xs"><Paperclip className="h-3 w-3" />{issue.attachmentsCount}</span>}
+                            </div>
+                            {assignee && <Avatar name={assignee.displayName} size="xs" />}
                           </div>
-                          {assignee && <Avatar name={assignee.displayName} size="xs" />}
-                        </div>
-                      </Card>
+                        </Card>
+                      </Link>
                     );
                   })}
+                  {colIssues.length === 0 && (
+                    <p className="text-xs text-center text-[var(--color-text-muted)] py-4">No issues</p>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+      <CreateIssueModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        projectId={projectId}
+      />
     </AppShell>
   );
 }

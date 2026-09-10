@@ -56,6 +56,13 @@ export const discussionCategoryEnum = pgEnum("discussion_category", [
   "question",
 ]);
 
+export const backlogStatusEnum = pgEnum("backlog_status", [
+  "in_progress",
+  "review",
+  "planned",
+  "done"
+])
+
 export const user = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   displayName: text("display_name").notNull(),
@@ -244,30 +251,6 @@ export const discussionReply = pgTable("discussion_reply", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const file = pgTable("file", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id").references(() => project.id, {
-    onDelete: "cascade",
-  }),
-  workspaceId: uuid("workspace_id")
-    .notNull()
-    .references(() => workspace.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  path: text("path").notNull(),
-  type: text("type").notNull(),
-  mimeType: text("mime_type"),
-  size: integer("size").notNull(),
-  uploadedById: uuid("uploaded_by_id")
-    .notNull()
-    .references(() => user.id),
-  version: integer("version").notNull().default(1),
-  parentId: uuid("parent_id").references((): any => file.id, {
-    onDelete: "cascade",
-  }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
 export const notification = pgTable("notification", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
@@ -298,3 +281,13 @@ export const activity = pgTable("activity", {
   metadata: jsonb("metadata").default({}),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const backlog = pgTable("backlog", {
+  id:uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => project.id, {
+    onDelete: "cascade",
+  }),
+  workspaceId: uuid("workspace_id").references(() => workspace.id, {
+    onDelete: "cascade"
+  })
+})

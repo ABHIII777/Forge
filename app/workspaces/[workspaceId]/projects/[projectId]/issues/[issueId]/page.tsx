@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, FileCode, Activity, Settings, ArrowLeft, Clock, User, Tag, Paperclip } from "lucide-react";
+import { LayoutDashboard, Columns3, AlertCircle, MessageSquare, Activity, Settings, ArrowLeft, Clock, User, Tag, Paperclip } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
