@@ -39,15 +39,6 @@ export const priorityEnum = pgEnum("priority", [
   "low",
 ]);
 
-export const notificationTypeEnum = pgEnum("notification_type", [
-  "mention",
-  "assignment",
-  "comment",
-  "workspace_invite",
-  "project_activity",
-  "system",
-]);
-
 export const discussionCategoryEnum = pgEnum("discussion_category", [
   "general",
   "technical",
@@ -249,20 +240,6 @@ export const discussionReply = pgTable("discussion_reply", {
   isEdited: boolean("is_edited").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export const notification = pgTable("notification", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  type: notificationTypeEnum("type").notNull(),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  actionUrl: text("action_url"),
-  metadata: jsonb("metadata").default({}),
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const activity = pgTable("activity", {

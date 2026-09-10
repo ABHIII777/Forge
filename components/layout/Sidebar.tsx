@@ -11,7 +11,6 @@ import {
   Users,
   Activity,
   Settings,
-  Bell,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -40,7 +39,6 @@ const navItems = [
   { href: "/discussions", label: "Discussions", icon: MessageSquare },
   { href: "/team", label: "Team", icon: Users },
   { href: "/activity", label: "Activity", icon: Activity },
-  { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

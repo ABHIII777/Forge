@@ -54,6 +54,39 @@
   --foreground: var(--color-text-primary);
 }
 
+/* Light theme overrides (applied via <html data-theme="light"> from useAppearance) */
+[data-theme="light"] {
+  --color-bg-primary: #fafafa;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f1f1;
+  --color-bg-elevated: #ffffff;
+
+  --color-border-primary: #e2e2e2;
+  --color-border-secondary: #d4d4d4;
+
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #525252;
+  --color-text-muted: #a3a3a3;
+  --color-text-inverse: #fafafa;
+
+  --color-accent-primary-muted: #ff8c0022;
+  --color-accent-secondary-muted: #00d4aa22;
+
+  --shadow-hard: 4px 4px 0 0 #00000020;
+  --shadow-hard-lg: 8px 8px 0 0 #00000020;
+
+  --background: var(--color-bg-primary);
+  --foreground: var(--color-text-primary);
+}
+
+/* Density (applied via <html data-density="..."> from useAppearance) */
+[data-density="compact"] {
+  font-size: 14px;
+}
+[data-density="spacious"] {
+  font-size: 16px;
+}
+
 html {
   font-family: var(--font-sans);
 }

@@ -120,6 +120,33 @@ export const updateMemberRoleSchema = z.object({
     role: z.enum(["owner", "admin", "member", "viewer"]),
 })
 
+export const updateProfileSchema = z.object({
+    displayName: z.string().trim().min(2).max(50).optional(),
+    username: z.string().trim().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores").optional(),
+    bio: z.preprocess(
+        (v) => (v === "" ? null : v),
+        z.string().trim().max(500).nullable().optional(),
+    ),
+    avatarUrl: z.preprocess(
+        (v) => (v === "" ? null : v),
+        z.string().trim().url("Must be a valid URL").max(2000).nullable().optional(),
+    ),
+}).refine((v) => Object.values(v).some((x) => x !== undefined), {
+    message: "Nothing to update",
+})
+
+export const updateAccountSchema = z.object({
+    email: z.email(),
+})
+
+export const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters").max(72),
+}).refine((v) => v.newPassword !== v.currentPassword, {
+    message: "New password must be different from the current password",
+    path: ["newPassword"],
+})
+
 export const activityTypeEnum = z.enum([
     "issue.created", "issue.updated", "issue.status_changed", "issue.assigned",
     "issue.commented", "project.created", "project.updated",
