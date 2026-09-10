@@ -8,7 +8,6 @@ import {
   CheckSquare,
   Users,
   MessageSquare,
-  FileText,
   ArrowRight,
   Sparkles,
   Shield,
@@ -41,14 +40,9 @@ const features = [
     description: "Threaded discussions with categories, replies, pins, locks, and rich text support for technical decisions.",
   },
   {
-    icon: FileText,
-    title: "File Management",
-    description: "Hierarchical file browser with versioning, mime-type detection, size tracking, and drag-and-drop uploads.",
-  },
-  {
     icon: Sparkles,
     title: "Global Search",
-    description: "Instant search across projects, issues, discussions, files, and users with keyboard shortcuts and filters.",
+    description: "Instant search across projects, issues, discussions, and users with keyboard shortcuts and filters.",
   },
 ];
 

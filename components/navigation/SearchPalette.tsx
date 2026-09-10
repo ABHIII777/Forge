@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Search, FileText, Folder, AlertCircle, MessageSquare, User, ArrowRight, Clock, Loader2 } from "lucide-react";
+import { Search, Folder, AlertCircle, MessageSquare, User, ArrowRight, Clock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/Dialog";
 import { Badge } from "@/components/ui/Badge";
@@ -12,7 +12,7 @@ interface SearchPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type SearchResultType = "project" | "issue" | "discussion" | "file" | "user";
+type SearchResultType = "project" | "issue" | "discussion" | "user";
 
 interface SearchResult {
   id: string;
@@ -26,7 +26,6 @@ const typeIcons: Record<SearchResultType, React.ComponentType<{ className?: stri
   project: Folder,
   issue: AlertCircle,
   discussion: MessageSquare,
-  file: FileText,
   user: User,
 };
 
@@ -34,7 +33,6 @@ const typeLabels: Record<SearchResultType, string> = {
   project: "Project",
   issue: "Issue",
   discussion: "Discussion",
-  file: "File",
   user: "User",
 };
 
@@ -47,7 +45,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
 
   const results = React.useMemo<SearchResult[]>(() => {
     if (!query.trim()) return [];
-    // TODO(api): search real projects, issues, discussions, files, users.
+    // TODO(api): search real projects, issues, discussions, users.
     return [];
   }, [query]);
 
@@ -84,7 +82,7 @@ export function SearchPalette({ open, onOpenChange }: SearchPaletteProps) {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search projects, issues, discussions, files, users..."
+            placeholder="Search projects, issues, discussions, users..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}

@@ -1,11 +1,11 @@
-import { FolderOpen, AlertCircle, MessageSquare, Bell, FileCode, Plus } from "lucide-react";
+import { FolderOpen, AlertCircle, MessageSquare, Bell, Plus } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 interface EmptyStateProps {
   title: string;
   description?: string;
-  icon?: "projects" | "issues" | "discussions" | "notifications" | "files";
+  icon?: "projects" | "issues" | "discussions" | "notifications";
   action?: { label: string; onClick: () => void };
 }
 
@@ -14,7 +14,6 @@ const iconMap = {
   issues: AlertCircle,
   discussions: MessageSquare,
   notifications: Bell,
-  files: FileCode,
 };
 
 export function EmptyState({ title, description, icon = "projects", action }: EmptyStateProps) {
