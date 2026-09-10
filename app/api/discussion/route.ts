@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { createDiscussionSchema } from "@/lib/validators";
+import { logActivity } from "@/lib/activity";
 import { discussion, project, user } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import z from "zod";
@@ -74,6 +75,19 @@ export async function POST(req: Request) {
             projectId: projectId,
             workspaceId: workspaceId
         }).returning()
+
+        try {
+            await logActivity(db, {
+                workspaceId,
+                projectId,
+                userId: author.id,
+                type: "discussion.created",
+                description: `started discussion "${title}"`,
+                metadata: { discussionId: created.id, category },
+            });
+        } catch (err) {
+            console.error("Failed to log activity for discussion creation", err);
+        }
 
         return NextResponse.json({ discussion: created }, { status: 201 })
     } catch (err) {

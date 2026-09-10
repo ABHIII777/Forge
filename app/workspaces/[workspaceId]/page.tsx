@@ -10,8 +10,9 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { AppShell } from "@/components/layout/AppShell";
 import { formatRelativeTime } from "@/lib/utils";
-import type { ActivityEvent, Project, User, Workspace } from "@/types";
+import type { Project, User, Workspace } from "@/types";
 import { workspaceNav } from "@/lib/constants/navigation";
+import { useActivity } from "@/hooks/useActivity";
 
 export default function WorkspaceOverviewPage() {
   const params = useParams();
@@ -19,7 +20,9 @@ export default function WorkspaceOverviewPage() {
   // TODO(api): load real workspace, projects, activities, members.
   const workspace = undefined as Workspace | undefined;
   const projects: Project[] = [];
-  const activities: ActivityEvent[] = [];
+  const { items: activities } = useActivity(
+    workspaceId ? { workspaceId, limit: 5 } : { limit: 5 },
+  );
   const members: User[] = [];
 
   if (!workspace) {
@@ -126,13 +129,12 @@ export default function WorkspaceOverviewPage() {
               <Card>
                 <div className="divide-y divide-[var(--color-border-primary)]">
                   {activities.slice(0, 5).map((activity) => {
-                    const user = null as User | null;
                     return (
                       <div key={activity.id} className="flex items-start gap-3 p-3">
-                        <Avatar name={user?.displayName} size="sm" />
+                        <Avatar name={activity.user?.displayName} size="sm" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-[var(--color-text-primary)]">
-                            <span className="font-medium">{user?.displayName}</span> {activity.description}
+                            <span className="font-medium">{activity.user?.displayName ?? "Someone"}</span> {activity.description}
                           </p>
                           <p className="text-xs text-[var(--color-text-muted)] font-mono mt-1">{formatRelativeTime(activity.createdAt)}</p>
                         </div>

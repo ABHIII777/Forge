@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { comment, issue, issueLabel, label, user } from "@/db/schema"
+import { comment, issue, issueLabel, label, project, user } from "@/db/schema"
 import { updateIssueSchema } from "@/lib/validators";
+import { logActivity } from "@/lib/activity";
 
 export async function GET(
     _req: Request,
@@ -95,9 +96,40 @@ export async function PATCH(
         const [updated] = await db.update(issue).set(values)
             .where(eq(issue.id, check.data)).returning();
 
+        try {
+            const [proj] = await db
+                .select({ workspaceId: project.workspaceId, key: project.key })
+                .from(project)
+                .where(eq(project.id, updated.projectId))
+                .limit(1);
+            if (proj) {
+                const type =
+                    status !== undefined && status !== row.status
+                        ? ("issue.status_changed" as const)
+                        : assigneeId !== undefined && assigneeId !== row.assigneeId
+                          ? ("issue.assigned" as const)
+                          : ("issue.updated" as const);
+                await logActivity(db, {
+                    workspaceId: proj.workspaceId,
+                    projectId: updated.projectId,
+                    userId: updated.reporterId,
+                    type,
+                    description:
+                        type === "issue.status_changed"
+                            ? `moved issue ${proj.key}-${updated.number} from ${row.status} to ${status}`
+                            : type === "issue.assigned"
+                              ? `assigned issue ${proj.key}-${updated.number}`
+                              : `updated issue ${proj.key}-${updated.number}`,
+                    metadata: { issueId: updated.id, number: updated.number, status: updated.status },
+                });
+            }
+        } catch (err) {
+            console.error("Failed to log activity for issue update", err);
+        }
+
         return NextResponse.json({ issue: updated }, { status: 200 })
 
-    } catch (err) {
+    } catch {
         return NextResponse.json({ error: "Failed to update the issue" }, { status : 500 } )
     }
 }

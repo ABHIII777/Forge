@@ -4,6 +4,7 @@ import z from "zod";
 import { db } from "@/lib/db";
 import { user, workspace, workspaceMember } from "@/db/schema";
 import { inviteMemberSchema } from "@/lib/validators";
+import { logActivity } from "@/lib/activity";
 
 export async function GET(
     _req: Request,
@@ -111,6 +112,18 @@ export async function POST(
                 role: parsed.data.role,
             })
             .returning();
+
+        try {
+            await logActivity(db, {
+                workspaceId: check.data,
+                userId: found.id,
+                type: "workspace.member_added",
+                description: `joined the workspace`,
+                metadata: { addedUserId: found.id, role: parsed.data.role },
+            });
+        } catch (err) {
+            console.error("Failed to log activity for member invite", err);
+        }
 
         return NextResponse.json({ member }, { status: 201 });
     } catch (err) {
