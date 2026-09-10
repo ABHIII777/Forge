@@ -6,7 +6,6 @@ import {
   FolderKanban,
   AlertCircle,
   CheckSquare,
-  Bell,
   Users,
   MessageSquare,
   ArrowRight,
@@ -37,7 +36,6 @@ const stats = [
   { label: "Active Projects", value: 4, icon: FolderKanban, color: "var(--color-accent-primary)" },
   { label: "Open Issues", value: 37, icon: AlertCircle, color: "var(--color-status-warning)" },
   { label: "Assigned to Me", value: 8, icon: CheckSquare, color: "var(--color-accent-secondary)" },
-  { label: "Unread Notifications", value: 3, icon: Bell, color: "var(--color-status-error)" },
   { label: "Team Online", value: 4, icon: Users, color: "var(--color-status-success)" },
   { label: "Pending Reviews", value: 2, icon: MessageSquare, color: "var(--color-status-info)" },
 ];
@@ -75,7 +73,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           {stats.map((stat) => (
             <Card key={stat.label} className="p-4">
               <div className="flex items-center gap-3">

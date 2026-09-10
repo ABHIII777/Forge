@@ -1,34 +1,38 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Switch } from "@/components/ui/Switch";
+"use client";
 
-interface AppearanceTabProps {
-  handleSave: () => void;
-  isSaving: boolean;
-  saveSuccess: boolean;
-}
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { useAppearance, type DensityChoice, type ThemeChoice } from "@/hooks/useAppearance";
+import { cn } from "@/lib/utils";
 
-export function AppearanceTab({ handleSave, isSaving, saveSuccess }: AppearanceTabProps) {
+const themes: ThemeChoice[] = ["dark", "light", "system"];
+const densities: DensityChoice[] = ["compact", "comfortable", "spacious"];
+
+export function AppearanceTab() {
+  const { theme, density, setTheme, setDensity } = useAppearance();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Appearance</CardTitle>
-        <CardDescription>Customize the look and feel</CardDescription>
+        <CardDescription>Customize the look and feel — saved automatically on this device</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">Theme</label>
           <div className="flex gap-3">
-            {["dark", "light", "system"].map((theme) => (
+            {themes.map((t) => (
               <button
-                key={theme}
-                className={`flex-1 p-3 border-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors capitalize ${
-                  theme === "dark"
-                    ? "bg-[var(--color-bg-tertiary)] border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]"
-                    : "bg-[var(--color-bg-tertiary)] border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)]"
-                }`}
+                key={t}
+                onClick={() => setTheme(t)}
+                aria-pressed={theme === t}
+                className={cn(
+                  "flex-1 p-3 border-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors capitalize bg-[var(--color-bg-tertiary)]",
+                  theme === t
+                    ? "border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]"
+                    : "border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)]",
+                )}
               >
-                {theme}
+                {t}
               </button>
             ))}
           </div>
@@ -36,29 +40,24 @@ export function AppearanceTab({ handleSave, isSaving, saveSuccess }: AppearanceT
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">Density</label>
           <div className="flex gap-3">
-            {["compact", "comfortable", "spacious"].map((density) => (
+            {densities.map((d) => (
               <button
-                key={density}
-                className="flex-1 p-3 bg-[var(--color-bg-tertiary)] border-2 border-[var(--color-border-primary)] rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)] transition-colors capitalize"
+                key={d}
+                onClick={() => setDensity(d)}
+                aria-pressed={density === d}
+                className={cn(
+                  "flex-1 p-3 border-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors capitalize bg-[var(--color-bg-tertiary)]",
+                  density === d
+                    ? "border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]"
+                    : "border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-secondary)]",
+                )}
               >
-                {density}
+                {d}
               </button>
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-[var(--color-text-primary)]">Collapsible Sidebar</p>
-            <p className="text-xs text-[var(--color-text-muted)]">Allow sidebar to collapse</p>
-          </div>
-          <Switch defaultChecked />
-        </div>
       </CardContent>
-      <CardFooter>
-        <Button variant="primary" onClick={handleSave} loading={isSaving}>
-          {saveSuccess ? "Saved!" : "Save Changes"}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

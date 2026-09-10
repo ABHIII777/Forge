@@ -2,13 +2,6 @@ export type Priority = "critical" | "high" | "medium" | "low";
 export type IssueStatus = "backlog" | "in_progress" | "review" | "done";
 export type ProjectStatus = "planning" | "active" | "on_hold" | "completed" | "archived";
 export type UserRole = "owner" | "admin" | "member" | "viewer";
-export type NotificationType =
-  | "mention"
-  | "assignment"
-  | "comment"
-  | "workspace_invite"
-  | "project_activity"
-  | "system";
 export type DiscussionCategory = "general" | "technical" | "proposal" | "announcement" | "question";
 
 export interface User {
@@ -133,18 +126,6 @@ export interface DiscussionReply {
   isEdited: boolean;
 }
 
-export interface Notification {
-  id: string;
-  userId: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  actionUrl: string | null;
-  metadata: Record<string, unknown>;
-  isRead: boolean;
-  createdAt: Date;
-}
-
 export interface ActivityEvent {
   id: string;
   workspaceId: string;
@@ -214,14 +195,6 @@ export interface SettingsData {
     theme: "dark" | "light" | "system";
     density: "compact" | "comfortable" | "spacious";
     sidebarCollapsed: boolean;
-  };
-  notifications: {
-    email: boolean;
-    push: boolean;
-    mentions: boolean;
-    assignments: boolean;
-    comments: boolean;
-    workspaceActivity: boolean;
   };
   security: {
     password: string;

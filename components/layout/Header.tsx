@@ -2,11 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Search, Bell, Command, Moon, Sun, LogOut, User, Settings, ChevronDown } from "lucide-react";
+import { Search, Command, Moon, Sun, LogOut, User, Settings, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -26,9 +25,8 @@ interface HeaderProps {
 export function Header({ onSearchOpen }: HeaderProps) {
   // TODO(api): load real current user.
   const currentUser = null as AppUser | null;
-  const unreadCount = 0;
 
-  const [user, setUser] = useState<any[]>([]);
+  const [user, setUser] = useState<{ displayName?: string }[]>([]);
 
   useEffect(() => {
     fetch("/api/dashboard").then((res) => res.json()).then((data) => setUser(data)).catch((err) => console.log(err))
@@ -55,18 +53,6 @@ export function Header({ onSearchOpen }: HeaderProps) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
-        {/* Notifications */}
-        <Link href="/notifications" className="relative">
-          <Button variant="ghost" size="sm" aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}>
-            <Bell className="h-4 w-4" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[var(--color-status-error)] text-[10px] font-bold text-white flex items-center justify-center font-mono">
-                {unreadCount}
-              </span>
-            )}
-          </Button>
-        </Link>
-
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
