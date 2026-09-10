@@ -21,6 +21,8 @@ interface CreateProjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultWorkspaceId?: string;
+  workspaces?: { id: string; name: string }[];
+  onCreated?: () => void;
 }
 
 interface FormErrors {
@@ -49,14 +51,18 @@ export function CreateProjectModal({
   open,
   onOpenChange,
   defaultWorkspaceId,
+  workspaces,
+  onCreated,
 }: CreateProjectModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errors, setErrors] = React.useState<FormErrors>({});
+  const [formError, setFormError] = React.useState<string | null>(null);
   const [createdProject, setCreatedProject] = React.useState<{
     id: string;
     key: string;
     name: string;
+    description: string;
     workspaceId: string;
     status: ProjectStatus;
   } | null>(null);
@@ -82,6 +88,7 @@ export function CreateProjectModal({
   const resetForm = () => {
     setFormData(initialFormData(defaultWorkspaceId));
     setErrors({});
+    setFormError(null);
     setCreatedProject(null);
   };
 
@@ -126,35 +133,38 @@ export function CreateProjectModal({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    const data = await fetch("/api/projects", {
-      method: "POST",
-      headers: {
-        "Content-Type" : "application/json"
-      },
-      body: JSON.stringify(formData)
-    })
+    setFormError(null);
+    try {
+      const data = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type" : "application/json"
+        },
+        body: JSON.stringify(formData)
+      })
 
-    const res = await data.json()
+      const res = await data.json()
 
-    if (data.ok) {
-      console.log("looks like everything worked fine: ", data)
-      setIsSubmitting(false)
-    } else {
-      console.log("Something went wrong")
-      console.error("The error occured", res)
+      if (!data.ok) {
+        setFormError(typeof res?.error === "string" ? res.error : (res?.message ?? "Failed to create project"));
+        return;
+      }
+
+      setCreatedProject({
+        id: res.project.id,
+        key: res.project.key,
+        name: res.project.name,
+        description: res.project.description,
+        workspaceId: res.project.workspaceId,
+        status: res.project.status,
+      });
+      onCreated?.();
+    } catch (err) {
+      console.error("Project creation failed", err);
+      setFormError("Failed to create project. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newCreatedProject = {
-      id: `proj_${Date.now()}`,
-      key: formData.key,
-      name: formData.name,
-      description: formData.description,
-      workspaceId: formData.workspaceId,
-      status: formData.status
-    }
-    setCreatedProject(newCreatedProject)
-    
-    setIsSubmitting(false);
   };
 
   const handleViewProject = () => {
@@ -259,9 +269,15 @@ export function CreateProjectModal({
                 onChange={(e) => updateField("workspaceId", e.target.value)}
                 className="input-base"
                 required
-                disabled
+                disabled={!workspaces || workspaces.length === 0}
               >
-                {formData.workspaceId ? (
+                {workspaces && workspaces.length > 0 ? (
+                  workspaces.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))
+                ) : formData.workspaceId ? (
                   <option value={formData.workspaceId}>
                     {formData.workspaceId}
                   </option>
@@ -292,6 +308,11 @@ export function CreateProjectModal({
               </select>
             </div>
           </div>
+          {formError && (
+            <p className="text-sm text-[var(--color-status-error)]" role="alert">
+              {formError}
+            </p>
+          )}
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => handleOpenChange(false)}>
               Cancel
