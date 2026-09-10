@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react"
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { Plus, MessageCircle, Paperclip, Clock } from "lucide-react";
@@ -24,10 +25,53 @@ export default function BoardPage() {
   const workspaceId = params.workspaceId as string;
   const projectId = params.projectId as string;
   // TODO(api): load real project and issues.
-  const project = undefined as Project | undefined;
+  // const project = undefined as Project | undefined;
   const issues: Issue[] = [];
 
-  if (!project) {
+  const [project, setProject] = React.useState<Project | null>(null)
+  const [notFound, setNotFound] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    if (!projectId) {
+      setNotFound(true)
+      setIsLoading(false)
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsLoading(true)
+    setNotFound(false)
+  
+    fetch(`/api/projects/${projectId}`, { signal: controller.signal})
+      .then((res) => {
+        if (res.status === 404) {
+          setNotFound(true)
+          return null;
+        }
+
+        if (!res.ok) throw new Error("Failed to load the project")
+        return res.json()
+      })
+      .then((data) => {
+        if (data) {
+          setProject((data?.project ?? null) as Project | null)
+          if (!data?.project) setNotFound(true)
+        }
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        console.error(err)
+        setProject(null)
+        setNotFound(true)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false)
+      })
+    return () => controller.abort();
+  }, [projectId])
+
+  if (!project || notFound) {
     return (
       <AppShell>
         <div className="flex items-center justify-center min-h-[60vh]">
