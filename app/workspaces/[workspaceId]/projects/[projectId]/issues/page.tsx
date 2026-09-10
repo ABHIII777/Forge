@@ -26,6 +26,7 @@ export default function IssuesPage() {
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [priorityFilter, setPriorityFilter] = React.useState<string>("all");
   const [createModalOpen, setCreateModalOpen] = React.useState(false);
+  const [issuesVersion, setIssuesVersion] = React.useState(0);
 
 
   React.useEffect(() => {
@@ -36,7 +37,7 @@ export default function IssuesPage() {
         setIssues(rows)
       })
       .catch((err) => console.log(err))
-  }, [projectId])
+  }, [projectId, issuesVersion])
 
   React.useEffect(() => {
     setIsLoading(true);
@@ -206,7 +207,7 @@ export default function IssuesPage() {
         </div>
       </div>
 
-      <CreateIssueModal open={createModalOpen} onOpenChange={setCreateModalOpen} projectId={projectId} />
+      <CreateIssueModal open={createModalOpen} onOpenChange={setCreateModalOpen} projectId={projectId} workspaceId={workspaceId} onCreated={() => setIssuesVersion((v) => v + 1)} />
     </AppShell>
   );
 }

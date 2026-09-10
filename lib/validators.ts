@@ -110,3 +110,12 @@ export const createDiscussionSchema = z.object({
     ]),
     tags: z.string().array().default([])
 })
+
+export const inviteMemberSchema = z.object({
+    email: z.email().transform((v) => v.toLowerCase().trim()),
+    role: z.enum(["owner", "admin", "member", "viewer"]).default("member"),
+})
+
+export const updateMemberRoleSchema = z.object({
+    role: z.enum(["owner", "admin", "member", "viewer"]),
+})
